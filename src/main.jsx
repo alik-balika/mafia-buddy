@@ -10,16 +10,20 @@ import {
   NotFound,
   RoleReveal,
 } from "./pages";
+import Layout from "./components/Layout";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route index element={<Home />} />
-        <Route path="create-room" element={<CreateRoom />} />
-        <Route path="join-room" element={<JoinRoom />} />
-        <Route path="lobby" element={<Lobby />} />
-        <Route path="role-reveal" element={<RoleReveal />} />
+        <Route element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="create-room" element={<CreateRoom />} />
+          <Route path="join-room" element={<JoinRoom />} />
+          <Route path="lobby" element={<Lobby />} />
+          <Route path="role-reveal" element={<RoleReveal />} />
+        </Route>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
