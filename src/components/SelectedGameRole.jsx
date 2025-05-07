@@ -19,19 +19,19 @@ const SelectedGameRole = ({
       </div>
       <div className="flex items-center space-x-2">
         <button
-          className="p-1 rounded bg-gray-600 hover:bg-gray-500"
+          className="p-1 rounded bg-gray-600 hover:bg-gray-500 cursor-pointer"
           onClick={onDecrement}
         >
           <Minus size={32} />
         </button>
         <button
-          className="p-1 rounded bg-gray-600 hover:bg-gray-500"
+          className="p-1 rounded bg-gray-600 hover:bg-gray-500 cursor-pointer"
           onClick={onIncrement}
         >
           <Plus size={32} />
         </button>
         <button
-          className="p-1 rounded bg-red-600 hover:bg-red-500"
+          className="p-1 rounded bg-red-600 hover:bg-red-500 cursor-pointer"
           onClick={onRemove}
         >
           <Trash2 size={32} />

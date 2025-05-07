@@ -1,43 +1,13 @@
 import React, { useState } from "react";
 import Button from "../components/Button";
-import CommonRoleOption from "../components/CommonRoleOption";
+import RoleOption from "../components/RoleOption";
 import SelectedGameRole from "../components/SelectedGameRole";
+import CustomRoleForm from "../components/CustomRoleForm";
+import roles from "../assets/roles.json";
 
 const CreateRoom = () => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedGameRoles, setSelectedGameRoles] = useState([]);
-
-  const commonRoles = [
-    {
-      name: "Mafia",
-      description:
-        "Works with other Mafia members to eliminate all non-mafia players",
-      count: 1,
-    },
-    {
-      name: "Angel",
-      description: "Can protect one person from being killed each night",
-      count: 1,
-    },
-    {
-      name: "Cop",
-      description:
-        "Can investigate one person each night to detmine if they are a Mafia",
-      count: 1,
-    },
-    {
-      name: "Doctor",
-      description:
-        "Can save one person from being killed each night (even themselves)",
-      count: 1,
-    },
-    {
-      name: "Suicide Bomber",
-      description:
-        "Can choose to take someone down with them at any point during a town meeting",
-      count: 1,
-    },
-  ];
 
   const handleAddRole = (roleName, roleDescription) => {
     setSelectedGameRoles((prev) =>
@@ -78,8 +48,8 @@ const CreateRoom = () => {
       <div className="mb-4">
         <h2 className="text-2xl font-bold mb-3">Select Roles</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-          {commonRoles.map((role) => (
-            <CommonRoleOption
+          {roles.common.map((role) => (
+            <RoleOption
               key={role.name}
               roleName={role.name}
               roleDescription={role.description}
@@ -101,43 +71,20 @@ const CreateRoom = () => {
             <div>
               <h3 className="text-xl">Other Roles</h3>
               <p className="text-sm text-gray-300 -mt-1 mb-2">
-                Select a less common role from the dropdown below
+                Select a less common role
               </p>
-              <select
-                name="other-roles"
-                id="other-roles"
-                className="w-full p-2 rounded bg-gray-800 border border-gray-600 cursor-pointer"
-              >
-                <option value="">Select a role</option>
-                <option value="">Option 1</option>
-                <option value="">Option 2</option>
-              </select>
-            </div>
-            <div>
-              <h3 className="text-xl mb-1">Create a custom role</h3>
-              <p className="text-sm text-gray-300 -mt-1 mb-2">
-                Got another role in mind? Add the role name and description
-                below!
-              </p>
-              <div className="flex flex-col">
-                <label htmlFor="customRoleName">Role Name</label>
-                <input
-                  type="text"
-                  name="customRoleName"
-                  id="customRoleName"
-                  placeholder="E.g., Jester"
-                  className="p-2 rounded bg-gray-800 border border-gray-600 mb-2"
-                />
-                <label htmlFor="customRoleDescription">Description</label>
-                <input
-                  type="text"
-                  name="customRoleDescription"
-                  id="customRoleDescription"
-                  placeholder="Briefly describe the role's ability"
-                  className="p-2 rounded bg-gray-800 border border-gray-600 mb-2"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                {roles.uncommon.map((role) => (
+                  <RoleOption
+                    key={role.name}
+                    roleName={role.name}
+                    roleDescription={role.description}
+                    onClick={() => handleAddRole(role.name, role.description)}
+                  />
+                ))}
               </div>
             </div>
+            <CustomRoleForm onAddRole={handleAddRole} />
           </div>
         )}
       </div>

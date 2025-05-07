@@ -1,6 +1,6 @@
 import React from "react";
 
-const CommonRoleOption = ({ roleName, roleDescription, onClick }) => {
+const RoleOption = ({ roleName, roleDescription, onClick }) => {
   return (
     <button
       onClick={onClick}
@@ -12,4 +12,4 @@ const CommonRoleOption = ({ roleName, roleDescription, onClick }) => {
   );
 };
 
-export default CommonRoleOption;
+export default RoleOption;

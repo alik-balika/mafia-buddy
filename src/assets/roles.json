@@ -1,0 +1,78 @@
+{
+  "common": [
+    {
+      "name": "Mafia",
+      "description": "Works with other Mafia members to eliminate all non-mafia players"
+    },
+    {
+      "name": "Angel",
+      "description": "Can protect one person from being killed each night (even themselves)"
+    },
+    {
+      "name": "Detective",
+      "description": "Can investigate one person each night to detmine if they are a Mafia"
+    },
+    {
+      "name": "Suicide Bomber",
+      "description": "Can choose to take someone down with them at any point during a town meeting"
+    }
+  ],
+  "uncommon": [
+    {
+      "name": "Jester",
+      "description": "Wins by getting themselves voted out"
+    },
+    {
+      "name": "Reviver",
+      "description": "Can revive a dead person once they have been dead for at least one round"
+    },
+    {
+      "name": "Vigilante",
+      "description": "Can choose to eliminate someone during night time but if they choose a non-mafia role they are eliminated along with the player they chose"
+    },
+    {
+      "name": "Lover",
+      "description": "Will die if the other lover dies"
+    },
+    {
+      "name": "Tanker",
+      "description": "Requires 2 nights for mafias to be able to kill them"
+    },
+    {
+      "name": "Blackmailer",
+      "description": "Silences a player, preventing them from speaking during discussions. Works together with the mafias"
+    },
+    {
+      "name": "Mayor",
+      "description": "Can reveal their role in-game during the day. Once revealed, their vote counts as 3"
+    },
+    {
+      "name": "Bodyguard",
+      "description": "Can choose one player to protect each night. If the Mafia tries to kill that player, the Bodyguard dies instead"
+    },
+    {
+      "name": "Mafia Godfather",
+      "description": "The leader of the Mafia. Appears innocent when investigated by the Cop"
+    },
+    {
+      "name": "Roleblocker",
+      "description": "Prevents a target player from using their night ability"
+    },
+    {
+      "name": "Executioner",
+      "description": "Assigned a random town player. Wins if that player gets voted out"
+    },
+    {
+      "name": "Arsonist",
+      "description": "Douses one person per night (point at a person to douse them). Can ignite all doused players at once to eliminate them (raise your hand to ignite). Cannot douse and ignite in the same night"
+    },
+    {
+      "name": "Amnesiac",
+      "description": "Can choose to permanently adopt the role of a dead player"
+    },
+    {
+      "name": "Framer",
+      "description": "Frames a player each night to appear guilty to Cops. Wins with the mafias"
+    }
+  ]
+}

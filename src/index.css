@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  /* Primary Colors */
   --color-primary-100: hsl(0, 70%, 89%);
   --color-primary-200: hsl(0, 70%, 79%);
   --color-primary-300: hsl(0, 70%, 68%);
@@ -10,4 +11,15 @@
   --color-primary-700: hsl(0, 70%, 36%);
   --color-primary-800: hsl(0, 70%, 29%);
   --color-primary-900: hsl(0, 70%, 21%);
+
+  /* Secondary Colors */
+  --color-accent-gold-100: hsl(39, 96%, 97%);
+  --color-accent-gold-200: hsl(39, 96%, 89%);
+  --color-accent-gold-300: hsl(39, 96%, 77%);
+  --color-accent-gold-400: hsl(39, 96%, 65%);
+  --color-accent-gold-500: hsl(39, 96%, 57%);
+  --color-accent-gold-600: hsl(39, 96%, 50%);
+  --color-accent-gold-700: hsl(39, 96%, 43%);
+  --color-accent-gold-800: hsl(39, 96%, 36%);
+  --color-accent-gold-900: hsl(39, 96%, 29%);
 }
