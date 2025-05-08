@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
+
 import Button from "../components/Button";
 import RoleOption from "../components/RoleOption";
 import SelectedGameRole from "../components/SelectedGameRole";
@@ -6,8 +8,10 @@ import CustomRoleForm from "../components/CustomRoleForm";
 import roles from "../assets/roles.json";
 
 const CreateRoom = () => {
+  const navigate = useNavigate();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedGameRoles, setSelectedGameRoles] = useState([]);
+  const [errors, setErrors] = useState([]);
 
   const handleAddRole = (roleName, roleDescription) => {
     setSelectedGameRoles((prev) =>
@@ -37,6 +41,46 @@ const CreateRoom = () => {
 
   const removeRole = (name) => {
     setSelectedGameRoles((prev) => prev.filter((role) => role.name !== name));
+  };
+
+  const handleCreateRoom = () => {
+    // In a real application, you would likely:
+    // 1. Send the selectedGameRoles to your server to create a new room.
+    // 2. Receive the unique room ID from the server.
+
+    const validationErrors = [];
+
+    if (selectedGameRoles.length === 0) {
+      validationErrors.push("Please select at least one role for the game.");
+    }
+
+    const mafiaLikeRoles = ["Mafia", "Mafia Godfather", "Arsonist"];
+    const hasMafia = selectedGameRoles.some(
+      (role) => mafiaLikeRoles.includes(role.name) && role.count > 0
+    );
+
+    if (!hasMafia) {
+      validationErrors.push(
+        "Please select at least one mafia-like role for the game."
+      );
+    }
+
+    const totalRoles = selectedGameRoles.reduce(
+      (sum, role) => sum + role.count,
+      0
+    );
+    if (totalRoles < 3) {
+      validationErrors.push("The game needs at least 3 roles.");
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    // For this example, we'll simulate creating a room and generate a temporary ID.
+    const roomId = Math.random().toString(36).substring(7).toUpperCase();
+    navigate(`/lobby/${roomId}`); // Programmatically navigate to the lobby page
   };
 
   return (
@@ -110,7 +154,11 @@ const CreateRoom = () => {
           )}
         </div>
       </div>
-      <Button onClick={() => console.log("Create Room")}>Create room</Button>
+      {errors &&
+        errors.map((error) => <p className="text-red-500 text-sm">{error}</p>)}
+      <Button className="mt-2" onClick={handleCreateRoom}>
+        Create room
+      </Button>
     </div>
   );
 };

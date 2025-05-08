@@ -20,7 +20,7 @@ createRoot(document.getElementById("root")).render(
           <Route index element={<Home />} />
           <Route path="create-room" element={<CreateRoom />} />
           <Route path="join-room" element={<JoinRoom />} />
-          <Route path="lobby" element={<Lobby />} />
+          <Route path="lobby/:roomId" element={<Lobby />} />
           <Route path="role-reveal" element={<RoleReveal />} />
         </Route>
 

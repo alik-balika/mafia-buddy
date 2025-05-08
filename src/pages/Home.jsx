@@ -10,7 +10,7 @@ const Home = () => {
     <div className="flex flex-col gap-4">
       <header className="text-center">
         <h1 className="text-3xl">Mafia Buddy</h1>
-        <hr class="h-1 mx-auto my-4 border-0 dark:bg-gray-700"></hr>
+        <hr className="h-1 mx-auto my-4 border-0 dark:bg-gray-700"></hr>
       </header>
       <Button onClick={() => navigate("/create-room")}>Create a room</Button>
       <Button onClick={() => navigate("/join-room")}>Join a room</Button>

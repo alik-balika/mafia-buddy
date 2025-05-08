@@ -10,10 +10,10 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     // hmr: true,
-    // allowedHosts: ["c91a-2600-100f-a020-b271-2c9b-64-c5ce-2b.ngrok-free.app"], // change link as ngrok host changes
+    allowedHosts: ["b364-2600-100f-a020-b271-2c9b-64-c5ce-2b.ngrok-free.app"], // change link as ngrok host changes
     hmr: {
       protocol: "wss",
-      host: "c91a-2600-100f-a020-b271-2c9b-64-c5ce-2b.ngrok-free.app",
+      host: "b364-2600-100f-a020-b271-2c9b-64-c5ce-2b.ngrok-free.app",
     },
   },
 });
