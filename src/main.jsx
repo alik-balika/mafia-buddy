@@ -21,9 +21,11 @@ createRoot(document.getElementById("root")).render(
           <Route path="create-room" element={<CreateRoom />} />
           <Route path="join-room" element={<JoinRoom />} />
           <Route path="lobby/:roomId" element={<Lobby />} />
-          <Route path="role-reveal" element={<RoleReveal />} />
+          <Route
+            path="role-reveal/:roomId/:playerName"
+            element={<RoleReveal />}
+          />
         </Route>
-
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
