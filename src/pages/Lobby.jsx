@@ -23,6 +23,27 @@ const Lobby = () => {
     { name: "AnEvenLongerReallyLongName", emoji: getRandomEmoji() },
   ]);
 
+  const selectedRoles = [
+    {
+      name: "Mafia",
+      description:
+        "Works with other Mafia members to eliminate all non-mafia players",
+      count: 3,
+    },
+    {
+      name: "Angel",
+      description:
+        "Can protect one person from being killed each night (even themselves)",
+      count: 1,
+    },
+    {
+      name: "Detective",
+      description:
+        "Can investigate one person each night to detmine if they are a Mafia",
+      count: 1,
+    },
+  ];
+
   const handleEmojiClick = (name) => {
     setPlayers((prevPlayers) =>
       prevPlayers.map((player) =>
@@ -37,16 +58,19 @@ const Lobby = () => {
       <div className="flex justify-center gap-4">
         <Button
           bgColor="accent-gold"
-          className="text-black font-semibold flex gap-2"
+          className="text-accent-gold-500 font-semibold flex gap-2"
+          variant="outline"
         >
           <Copy /> Copy Invite Link
         </Button>
         <Button>Leave Room</Button>
       </div>
-      <div className="bg-gray-700 rounded border-1 border-primary-800 mt-4 p-6">
+      <div className="bg-gray-700 rounded mt-4 p-6 shadow-md shadow-black">
         <div className="flex justify-between items-center">
           <p className="font-bold text-xl">Players (N)</p>
-          <Button className="flex gap-2">
+          {/* TODO: fix this disabled logic and player count logic */}
+          {/* Only narrator should see this button */}
+          <Button className="flex gap-2" disabled={players.length < 10}>
             <Play /> Start Game
           </Button>
         </div>
@@ -66,8 +90,21 @@ const Lobby = () => {
         <p className="text-sm mt-2 text-gray-300">
           Tap your emoji to change it to a random one!
         </p>
+        {/* Of course... I need to store this data in a DB. Then it will exist for everyone. Duh. */}
+        <div className="mt-3 border-t border-gray-600 pt-4">
+          <h2 className="text-xl font-bold mb-2 text-gray-100">
+            Roles in this Game:
+          </h2>
+          <ul className="space-y-1">
+            {selectedRoles.map((role, idx) => (
+              <li key={`${role.name}-${idx}`} className="text-gray-200">
+                {role.name}{" "}
+                <span className="font-semibold">(x{role.count})</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-      {/* TODO: DISPLAY ROLES IN GAME HERE. HOW? THROUGH SOME REACT STATE? QUERY PARAMS? NEED TO FIGURE IT OUT */}
     </div>
   );
 };

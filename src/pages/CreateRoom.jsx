@@ -69,6 +69,7 @@ const CreateRoom = () => {
       (sum, role) => sum + role.count,
       0
     );
+
     if (totalRoles < 3) {
       validationErrors.push("The game needs at least 3 roles.");
     }
@@ -80,7 +81,7 @@ const CreateRoom = () => {
 
     // For this example, we'll simulate creating a room and generate a temporary ID.
     const roomId = Math.random().toString(36).substring(7).toUpperCase();
-    navigate(`/lobby/${roomId}`); // Programmatically navigate to the lobby page
+    navigate(`/lobby/${roomId}`);
   };
 
   return (
