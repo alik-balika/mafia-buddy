@@ -6,6 +6,7 @@ import RoleOption from "../components/RoleOption";
 import SelectedGameRole from "../components/SelectedGameRole";
 import CustomRoleForm from "../components/CustomRoleForm";
 import roles from "../assets/roles.json";
+import { createRoom } from "../firebase/firestore/rooms";
 
 const CreateRoom = () => {
   const navigate = useNavigate();
@@ -79,8 +80,8 @@ const CreateRoom = () => {
       return;
     }
 
-    // For this example, we'll simulate creating a room and generate a temporary ID.
     const roomId = Math.random().toString(36).substring(7).toUpperCase();
+    createRoom(roomId, "Alik", selectedGameRoles);
     navigate(`/lobby/${roomId}`);
   };
 
