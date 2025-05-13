@@ -81,7 +81,7 @@ const CreateRoom = () => {
     }
 
     const roomId = Math.random().toString(36).substring(7).toUpperCase();
-    createRoom(roomId, "Alik", selectedGameRoles);
+    createRoom(roomId, selectedGameRoles);
     navigate(`/lobby/${roomId}`);
   };
 

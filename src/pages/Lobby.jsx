@@ -13,8 +13,7 @@ import {
 import Button from "../components/Button";
 import PlayerCard from "../components/PlayerCard";
 import { db } from "../firebase/firebase";
-import { getRoom } from "../firebase/firestore/rooms";
-import { getRandomEmoji } from "../utils";
+import { getRoom, changePlayerEmoji } from "../firebase/firestore/rooms";
 
 const Lobby = () => {
   const { roomId } = useParams();
@@ -32,6 +31,9 @@ const Lobby = () => {
         console.log("Copy failed", err);
       });
   };
+  const playerId = localStorage.getItem("playerId");
+
+  // TODO: ADD SUPER SECRET QUERY PARAM THAT WILL ALLOW ME PERSONALLY TO ACT AS NARRATOR IN ALL LOBBIES
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -63,20 +65,19 @@ const Lobby = () => {
     };
   }, [roomId]);
 
-  // const [players, setPlayers] = useState([
-  //   { name: "Bob", emoji: getRandomEmoji() },
-  //   { name: "Jane", emoji: getRandomEmoji() },
-  //   { name: "Tom", emoji: getRandomEmoji() },
-  //   { name: "AReallyLongName", emoji: getRandomEmoji() },
-  //   { name: "AnEvenLongerReallyLongName", emoji: getRandomEmoji() },
-  // ]);
+  const handleEmojiClick = async (clickedPlayerId) => {
+    if (clickedPlayerId !== playerId) return;
 
-  const handleEmojiClick = (name) => {
-    setPlayers((prevPlayers) =>
-      prevPlayers.map((player) =>
-        player.name === name ? { ...player, emoji: getRandomEmoji() } : player
-      )
-    );
+    try {
+      const newEmoji = await changePlayerEmoji(roomId, clickedPlayerId);
+      setPlayers((prevPlayers) =>
+        prevPlayers.map((p) =>
+          p.id === clickedPlayerId ? { ...p, emoji: newEmoji } : p
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update emoji:", error);
+    }
   };
 
   if (!roomData) {
@@ -122,7 +123,7 @@ const Lobby = () => {
               name={player.name}
               key={player.name}
               emoji={player.emoji}
-              onEmojiClick={() => handleEmojiClick(player.name)}
+              onEmojiClick={() => handleEmojiClick(player.id)}
             />
           ))}
         </div>

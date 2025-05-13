@@ -6,11 +6,12 @@ import {
   serverTimestamp,
   setDoc,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 import { getRandomEmoji } from "../../utils";
 
-export const createRoom = async (roomId, narratorName, rolePool) => {
+export const createRoom = async (roomId, rolePool) => {
   const roomData = {
     rolePool: rolePool,
     assignedRoles: {},
@@ -61,4 +62,15 @@ export const joinRoom = async (roomId, playerName) => {
   });
 
   return playerId;
+};
+
+export const changePlayerEmoji = async (roomId, playerId) => {
+  const newEmoji = getRandomEmoji();
+
+  const playerRef = doc(db, `rooms/${roomId}/players`, playerId);
+  await updateDoc(playerRef, {
+    emoji: newEmoji,
+  });
+
+  return newEmoji;
 };
