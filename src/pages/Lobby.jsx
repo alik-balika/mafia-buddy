@@ -65,6 +65,7 @@ const Lobby = () => {
     };
   }, [roomId]);
 
+  // TODO: HANDLE SPAM CLICKS TO EMOJI UPDATE. EITHER USE SETTIMEOUT OR SOME OTHER SOLUTION
   const handleEmojiClick = async (clickedPlayerId) => {
     if (clickedPlayerId !== playerId) return;
 
@@ -121,9 +122,10 @@ const Lobby = () => {
           {players.map((player) => (
             <PlayerCard
               name={player.name}
-              key={player.name}
+              key={player.id}
               emoji={player.emoji}
               onEmojiClick={() => handleEmojiClick(player.id)}
+              isCurrentUser={player.id === playerId}
             />
           ))}
         </div>
