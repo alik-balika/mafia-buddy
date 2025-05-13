@@ -8,12 +8,11 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
+import { getRandomEmoji } from "../../utils";
 
 export const createRoom = async (roomId, narratorName, rolePool) => {
   const roomData = {
-    narrator: narratorName,
     rolePool: rolePool,
-    players: [],
     assignedRoles: {},
     gameStarted: false,
     createdAt: serverTimestamp(),
@@ -43,6 +42,7 @@ export const joinRoom = async (roomId, playerName) => {
   const playersRef = collection(db, `rooms/${roomId}/players`);
   const playersSnap = await getDocs(playersRef);
 
+  playerName = playerName.trim();
   const nameTaken = playersSnap.docs.some(
     (doc) => doc.data().name.toLowerCase() === playerName.toLowerCase()
   );
@@ -54,9 +54,10 @@ export const joinRoom = async (roomId, playerName) => {
   const playerId = uuidv4();
   await setDoc(doc(playersRef, playerId), {
     name: playerName,
+    emoji: getRandomEmoji(),
     role: null,
     isNarrator: false,
-    joinedAt: Date.now(),
+    joinedAt: serverTimestamp(),
   });
 
   return playerId;

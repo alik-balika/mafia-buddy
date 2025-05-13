@@ -1,15 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { Copy, Play } from "lucide-react";
+import { toast } from "react-toastify";
+import {
+  doc,
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
 
 import Button from "../components/Button";
 import PlayerCard from "../components/PlayerCard";
-import emojiJson from "../assets/emojis.json";
+import { db } from "../firebase/firebase";
 import { getRoom } from "../firebase/firestore/rooms";
+import { getRandomEmoji } from "../utils";
 
 const Lobby = () => {
   const { roomId } = useParams();
   const [roomData, setRoomData] = useState(null);
+  const [players, setPlayers] = useState([]);
+  const copyLinkNotification = () => {
+    const inviteLink = `${window.location.origin}/join-room?roomId=${roomId}`;
+    navigator.clipboard
+      .writeText(inviteLink)
+      .then(() => {
+        toast("Link has been copied!");
+      })
+      .catch((err) => {
+        toast.error("Failed to copy the link.");
+        console.log("Copy failed", err);
+      });
+  };
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -22,40 +44,32 @@ const Lobby = () => {
     fetchRoom();
   }, [roomId]);
 
-  const getRandomEmoji = () => {
-    const randomIndex = Math.floor(Math.random() * emojiJson.emojis.length);
+  useEffect(() => {
+    const roomRef = doc(db, "rooms", roomId);
+    const playersRef = collection(roomRef, "players");
 
-    return emojiJson.emojis[randomIndex];
-  };
+    const playersQuery = query(playersRef, orderBy("joinedAt"));
 
-  const [players, setPlayers] = useState([
-    { name: "Bob", emoji: getRandomEmoji() },
-    { name: "Jane", emoji: getRandomEmoji() },
-    { name: "Tom", emoji: getRandomEmoji() },
-    { name: "AReallyLongName", emoji: getRandomEmoji() },
-    { name: "AnEvenLongerReallyLongName", emoji: getRandomEmoji() },
-  ]);
+    const unsubscribe = onSnapshot(playersQuery, (snapshot) => {
+      const updatedPlayers = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setPlayers(updatedPlayers);
+    });
 
-  const selectedRoles = [
-    {
-      name: "Mafia",
-      description:
-        "Works with other Mafia members to eliminate all non-mafia players",
-      count: 3,
-    },
-    {
-      name: "Angel",
-      description:
-        "Can protect one person from being killed each night (even themselves)",
-      count: 1,
-    },
-    {
-      name: "Detective",
-      description:
-        "Can investigate one person each night to detmine if they are a Mafia",
-      count: 1,
-    },
-  ];
+    return () => {
+      unsubscribe();
+    };
+  }, [roomId]);
+
+  // const [players, setPlayers] = useState([
+  //   { name: "Bob", emoji: getRandomEmoji() },
+  //   { name: "Jane", emoji: getRandomEmoji() },
+  //   { name: "Tom", emoji: getRandomEmoji() },
+  //   { name: "AReallyLongName", emoji: getRandomEmoji() },
+  //   { name: "AnEvenLongerReallyLongName", emoji: getRandomEmoji() },
+  // ]);
 
   const handleEmojiClick = (name) => {
     setPlayers((prevPlayers) =>
@@ -66,7 +80,14 @@ const Lobby = () => {
   };
 
   if (!roomData) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col items-center gap-2 text-gray-300">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-gold-500"></div>
+          <p>Loading lobby...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -77,6 +98,7 @@ const Lobby = () => {
           bgColor="accent-gold"
           className="text-accent-gold-500 font-semibold flex gap-2"
           variant="outline"
+          onClick={copyLinkNotification}
         >
           <Copy /> Copy Invite Link
         </Button>
