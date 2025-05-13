@@ -1,13 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { Copy, Play } from "lucide-react";
 
 import Button from "../components/Button";
 import PlayerCard from "../components/PlayerCard";
 import emojiJson from "../assets/emojis.json";
+import { getRoom } from "../firebase/firestore/rooms";
 
 const Lobby = () => {
   const { roomId } = useParams();
+  const [roomData, setRoomData] = useState(null);
+
+  useEffect(() => {
+    const fetchRoom = async () => {
+      const data = await getRoom(roomId);
+      if (data) {
+        setRoomData(data);
+      }
+    };
+
+    fetchRoom();
+  }, [roomId]);
 
   const getRandomEmoji = () => {
     const randomIndex = Math.floor(Math.random() * emojiJson.emojis.length);
@@ -52,6 +65,10 @@ const Lobby = () => {
     );
   };
 
+  if (!roomData) {
+    return <p>Loading...</p>;
+  }
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-center mb-2">{roomId}</h1>
@@ -90,13 +107,12 @@ const Lobby = () => {
         <p className="text-sm mt-2 text-gray-300">
           Tap your emoji to change it to a random one!
         </p>
-        {/* Of course... I need to store this data in a DB. Then it will exist for everyone. Duh. */}
         <div className="mt-3 border-t border-gray-600 pt-4">
           <h2 className="text-xl font-bold mb-2 text-gray-100">
             Roles in this Game:
           </h2>
           <ul className="space-y-1">
-            {selectedRoles.map((role, idx) => (
+            {roomData.rolePool.map((role, idx) => (
               <li key={`${role.name}-${idx}`} className="text-gray-200">
                 {role.name}{" "}
                 <span className="font-semibold">(x{role.count})</span>
