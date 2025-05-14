@@ -1,27 +1,79 @@
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
-
-const dummyAssignedRoles = {
-  Bob: { name: "Mafia", description: "You are a member of the mafia." },
-  Jane: { name: "Villager", description: "You're just a normal villager." },
-  Tom: { name: "Detective", description: "You can investigate each night." },
-};
+import { getRoom, getPlayerRole } from "../firebase/firestore/rooms";
+import { toast } from "react-toastify";
 
 // TODO MAKE THIS MORE OF AN ACTUAL LOOKING CARD THAT WHEN TAPPED CAN BE FLIPPED TO HIDE/REVEAL
 // ALSO, ON DEATH SHOULD BE ABLE TO SEE WHAT EVERYONE ELSE IS
-// ALSO, SHOULD SUPPORT PERSISTENT CONNECTION. IF THE PAGE GETS REFRESHED OR THE PHONE TURNS OFF
-// THEY SHOULD BE ABLE TO RECONNECT AND SEE EVERYTHING EASILY
 const RoleReveal = () => {
-  const { roomId, playerName } = useParams();
+  const { roomId } = useParams();
   const [role, setRole] = useState(null);
+  const [room, setRoom] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate getting assigned role
-    console.log(playerName);
-    setRole(dummyAssignedRoles[playerName]);
-  }, [playerName]);
+    const playerId = localStorage.getItem("playerId").trim();
 
-  if (!role) return <p>Loading role...</p>;
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [roomData, assignedRole] = await Promise.all([
+          getRoom(roomId),
+          getPlayerRole(roomId, playerId),
+        ]);
+
+        if (!roomData?.gameStarted) {
+          toast.info("The game has not started yet.");
+          setLoading(false);
+          return;
+        }
+
+        const roleFromPool = roomData.rolePool.find(
+          (r) => r.name === assignedRole
+        );
+
+        setRoom(roomData);
+        setRole(roleFromPool);
+      } catch (err) {
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [roomId]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col items-center gap-2 text-gray-300">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-gold-500"></div>
+          <p>Loading role...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!room?.gameStarted) {
+    return (
+      <div className="flex items-center justify-center h-screen text-white text-center">
+        <p>The game has not started yet!</p>
+      </div>
+    );
+  }
+
+  if (!role) {
+    return (
+      <div className="flex items-center justify-center h-screen text-white text-center">
+        <p>
+          No role found for this player in this room.
+          <br />
+          Make sure the game has started and you're in the right room.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">

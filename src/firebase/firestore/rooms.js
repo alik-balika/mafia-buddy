@@ -80,3 +80,22 @@ export const removePlayerFromRoom = async (roomId, playerId) => {
   const playerRef = doc(db, `rooms/${roomId}/players`, playerId);
   await deleteDoc(playerRef);
 };
+
+export const getPlayerRole = async (roomId, playerId) => {
+  try {
+    if (!playerId) {
+      throw new Error("Player ID not found.");
+    }
+
+    const roleRef = doc(db, `rooms/${roomId}/players`, playerId);
+    const roleSnapshot = await getDoc(roleRef);
+
+    if (roleSnapshot.exists()) {
+      return roleSnapshot.data().role;
+    } else {
+      throw new Error("Role not found for this player.");
+    }
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
