@@ -19,6 +19,7 @@ const Lobby = () => {
   const { roomId } = useParams();
   const [roomData, setRoomData] = useState(null);
   const [players, setPlayers] = useState([]);
+  const [emojiClickCooldown, setEmojiClickCooldown] = useState(false);
   const copyLinkNotification = () => {
     const inviteLink = `${window.location.origin}/join-room?roomId=${roomId}`;
     navigator.clipboard
@@ -65,9 +66,10 @@ const Lobby = () => {
     };
   }, [roomId]);
 
-  // TODO: HANDLE SPAM CLICKS TO EMOJI UPDATE. EITHER USE SETTIMEOUT OR SOME OTHER SOLUTION
   const handleEmojiClick = async (clickedPlayerId) => {
-    if (clickedPlayerId !== playerId) return;
+    if (clickedPlayerId !== playerId || emojiClickCooldown) return;
+
+    setEmojiClickCooldown(true);
 
     try {
       const newEmoji = await changePlayerEmoji(roomId, clickedPlayerId);
@@ -79,6 +81,8 @@ const Lobby = () => {
     } catch (error) {
       console.error("Failed to update emoji:", error);
     }
+
+    setEmojiClickCooldown(false);
   };
 
   if (!roomData) {
