@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { Copy, Play } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -13,13 +13,20 @@ import {
 import Button from "../components/Button";
 import PlayerCard from "../components/PlayerCard";
 import { db } from "../firebase/firebase";
-import { getRoom, changePlayerEmoji } from "../firebase/firestore/rooms";
+import {
+  getRoom,
+  changePlayerEmoji,
+  removePlayerFromRoom,
+} from "../firebase/firestore/rooms";
 
 const Lobby = () => {
+  const navigate = useNavigate();
   const { roomId } = useParams();
   const [roomData, setRoomData] = useState(null);
   const [players, setPlayers] = useState([]);
   const [emojiClickCooldown, setEmojiClickCooldown] = useState(false);
+  const [currentPlayer, setCurrentPlayer] = useState(null);
+
   const copyLinkNotification = () => {
     const inviteLink = `${window.location.origin}/join-room?roomId=${roomId}`;
     navigator.clipboard
@@ -32,10 +39,9 @@ const Lobby = () => {
         console.log("Copy failed", err);
       });
   };
-  const playerId = localStorage.getItem("playerId");
 
   // TODO: ADD SUPER SECRET QUERY PARAM THAT WILL ALLOW ME PERSONALLY TO ACT AS NARRATOR IN ALL LOBBIES
-
+  // ALSO TODO: ALLOW NARRATOR TO CHANGE NAMES AND KICK PEOPLE
   useEffect(() => {
     const fetchRoom = async () => {
       const data = await getRoom(roomId);
@@ -66,8 +72,21 @@ const Lobby = () => {
     };
   }, [roomId]);
 
+  useEffect(() => {
+    if (!players?.length) return;
+
+    const storedId = localStorage.getItem("playerId")?.trim();
+    const player = players.find((p) => p.id === storedId);
+    if (!storedId || !player) {
+      localStorage.removeItem("playerId");
+      return navigate(`/join-room?roomId=${roomId}`);
+    }
+
+    setCurrentPlayer(player);
+  }, [players, navigate, roomId]);
+
   const handleEmojiClick = async (clickedPlayerId) => {
-    if (clickedPlayerId !== playerId || emojiClickCooldown) return;
+    if (clickedPlayerId !== currentPlayer.id || emojiClickCooldown) return;
 
     setEmojiClickCooldown(true);
 
@@ -83,6 +102,34 @@ const Lobby = () => {
     }
 
     setEmojiClickCooldown(false);
+  };
+
+  const numberOfRequiredPlayers = () => {
+    if (!roomData || !roomData.rolePool) return 0;
+    const count = roomData.rolePool.reduce((total, role) => {
+      return total + role.count;
+    }, 0);
+
+    return count;
+  };
+
+  const handleLeaveRoom = async () => {
+    if (!window.confirm("Are you sure you want to leave the room?")) return;
+
+    const storedId = localStorage.getItem("playerId")?.trim();
+    if (!storedId) {
+      navigate("/");
+      return;
+    }
+
+    try {
+      await removePlayerFromRoom(roomId, storedId);
+      localStorage.removeItem("playerId");
+      navigate("/");
+    } catch (err) {
+      console.error("Failed to leave room:", err);
+      toast.error("Error leaving room. Try again.");
+    }
   };
 
   if (!roomData) {
@@ -108,28 +155,34 @@ const Lobby = () => {
         >
           <Copy /> Copy Invite Link
         </Button>
-        <Button>Leave Room</Button>
+        <Button onClick={handleLeaveRoom}>Leave Room</Button>
       </div>
       <div className="bg-gray-700 rounded mt-4 p-6 shadow-md shadow-black">
         <div className="flex justify-between items-center">
-          <p className="font-bold text-xl">Players (N)</p>
-          {/* TODO: fix this disabled logic and player count logic */}
-          {/* Only narrator should see this button */}
-          <Button className="flex gap-2" disabled={players.length < 10}>
-            <Play /> Start Game
-          </Button>
+          <p className="font-bold text-xl">Players ({players.length})</p>
+          {currentPlayer?.isNarrator && (
+            <Button
+              className="flex gap-2"
+              disabled={players.length < numberOfRequiredPlayers()}
+            >
+              <Play /> Start Game
+            </Button>
+          )}
         </div>
-        <p className="text-accent-gold-500 text-sm my-2 loading">
-          Waiting for players (2 more needed)
-        </p>
-        <div className="flex flex-col gap-2">
+        {numberOfRequiredPlayers() - players.length > 0 && (
+          <p className="text-accent-gold-500 text-sm my-2 loading">
+            Waiting for players ({numberOfRequiredPlayers() - players.length}{" "}
+            more needed)
+          </p>
+        )}
+        <div className="flex flex-col gap-2 mt-4">
           {players.map((player) => (
             <PlayerCard
               name={player.name}
               key={player.id}
               emoji={player.emoji}
               onEmojiClick={() => handleEmojiClick(player.id)}
-              isCurrentUser={player.id === playerId}
+              isCurrentUser={player.id === currentPlayer?.id}
             />
           ))}
         </div>

@@ -7,6 +7,7 @@ import {
   setDoc,
   getDoc,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 import { getRandomEmoji } from "../../utils";
@@ -73,4 +74,9 @@ export const changePlayerEmoji = async (roomId, playerId) => {
   });
 
   return newEmoji;
+};
+
+export const removePlayerFromRoom = async (roomId, playerId) => {
+  const playerRef = doc(db, `rooms/${roomId}/players`, playerId);
+  await deleteDoc(playerRef);
 };
