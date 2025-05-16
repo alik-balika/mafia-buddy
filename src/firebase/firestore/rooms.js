@@ -106,3 +106,15 @@ export const updatePlayerName = async (roomId, playerId, newName) => {
     name: newName,
   });
 };
+
+export const updateRoomRoles = async (roomId, newRolePool) => {
+  try {
+    const roomRef = doc(db, "rooms", roomId);
+    await updateDoc(roomRef, {
+      rolePool: newRolePool,
+    });
+  } catch (error) {
+    console.error("Failed to update room roles:", error);
+    throw error;
+  }
+};

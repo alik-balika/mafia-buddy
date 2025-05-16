@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Copy, Play } from "lucide-react";
+import { Copy, Play, Pencil } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   doc,
@@ -195,7 +195,7 @@ const Lobby = () => {
             more needed)
           </p>
         )}
-        <p className="text-sm mt-2 text-accent-gold-500">
+        <p className="text-sm mt-2 text-accent-gold-500 font-bold">
           Narrator Tip: You can edit names by clicking on them!
         </p>
         <div className="flex flex-col gap-2 mt-4">
@@ -217,9 +217,21 @@ const Lobby = () => {
         </p>
         {/* TODO: ADD EDIT ROLES BUTTON THAT NARRATOR CAN SEE THAT ALLOWS THEM TO EDIT/ADD NEW ROLES */}
         <div className="mt-3 border-t border-gray-600 pt-4">
-          <h2 className="text-xl font-bold mb-2 text-gray-100">
-            Roles in this Game:
-          </h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xl font-bold text-gray-100">
+              Roles in this Game:
+            </h2>
+            {currentPlayer?.isNarrator && (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="text-sm flex items-center gap-2"
+                onClick={() => navigate(`/edit-room/${roomId}`)}
+              >
+                <Pencil size={16} /> Edit Roles
+              </Button>
+            )}
+          </div>
           <ul className="space-y-1">
             {roomData.rolePool.map((role, idx) => (
               <li key={`${role.name}-${idx}`} className="text-gray-200">

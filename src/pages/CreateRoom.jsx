@@ -6,12 +6,12 @@ import RoleOption from "../components/RoleOption";
 import SelectedGameRole from "../components/SelectedGameRole";
 import CustomRoleForm from "../components/CustomRoleForm";
 import roles from "../assets/roles.json";
-import { createRoom } from "../firebase/firestore/rooms";
+import { createRoom, updateRoomRoles } from "../firebase/firestore/rooms";
 
-const CreateRoom = () => {
+const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
   const navigate = useNavigate();
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [selectedGameRoles, setSelectedGameRoles] = useState([]);
+  const [selectedGameRoles, setSelectedGameRoles] = useState(initialRoles);
   const [errors, setErrors] = useState([]);
 
   const handleAddRole = (roleName, roleDescription) => {
@@ -44,11 +44,7 @@ const CreateRoom = () => {
     setSelectedGameRoles((prev) => prev.filter((role) => role.name !== name));
   };
 
-  const handleCreateRoom = () => {
-    // In a real application, you would likely:
-    // 1. Send the selectedGameRoles to your server to create a new room.
-    // 2. Receive the unique room ID from the server.
-
+  const handleCreateOrUpdateRoom = async () => {
     const validationErrors = [];
 
     if (selectedGameRoles.length === 0) {
@@ -80,8 +76,13 @@ const CreateRoom = () => {
       return;
     }
 
-    const roomId = Math.random().toString(36).substring(7).toUpperCase();
-    createRoom(roomId, selectedGameRoles);
+    if (isEditing) {
+      await updateRoomRoles(roomId, selectedGameRoles);
+    } else {
+      const roomId = Math.random().toString(36).substring(7).toUpperCase();
+      createRoom(roomId, selectedGameRoles);
+    }
+
     navigate(`/lobby/${roomId}`);
   };
 
@@ -158,9 +159,18 @@ const CreateRoom = () => {
       </div>
       {errors &&
         errors.map((error) => <p className="text-red-500 text-sm">{error}</p>)}
-      <Button className="mt-2" onClick={handleCreateRoom}>
-        Create room
+      <Button className="mt-2" onClick={handleCreateOrUpdateRoom}>
+        {isEditing ? "Update" : "Create"} room
       </Button>
+      {isEditing && (
+        <Button
+          onClick={() => navigate(`/lobby/${roomId}`)}
+          className="mt-2"
+          variant="outline"
+        >
+          Back to Lobby
+        </Button>
+      )}
     </div>
   );
 };

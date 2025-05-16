@@ -12,7 +12,7 @@ const Button = ({
   const backgroundStyle =
     variant !== "outline"
       ? `bg-${bgColor}-500 hover:bg-${bgColor}-600`
-      : `border-1 border-${bgColor}-500 hover:border-${bgColor}-600`;
+      : `border-1 border-${bgColor}-500 hover:border-${bgColor}-600 text-${bgColor}-400`;
 
   const baseStyles = `${backgroundStyle} px-4 py-2 rounded transition-colors duration-200 ${
     disabled ? "disabled:opacity-50" : "hover:scale-102 cursor-pointer"
