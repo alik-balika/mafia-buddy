@@ -11,6 +11,7 @@ import {
   RoleReveal,
 } from "./pages";
 import Layout from "./components/Layout";
+import GameRoom from "./pages/GameRoom";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -22,6 +23,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="join-room" element={<JoinRoom />} />
           <Route path="lobby/:roomId" element={<Lobby />} />
           <Route path="role-reveal/:roomId" element={<RoleReveal />} />
+          <Route path="game-room/:roomId" element={<GameRoom />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

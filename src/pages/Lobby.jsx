@@ -17,6 +17,7 @@ import {
   getRoom,
   changePlayerEmoji,
   removePlayerFromRoom,
+  updatePlayerName,
 } from "../firebase/firestore/rooms";
 
 const Lobby = () => {
@@ -41,7 +42,6 @@ const Lobby = () => {
   };
 
   // TODO: ADD SUPER SECRET QUERY PARAM THAT WILL ALLOW ME PERSONALLY TO ACT AS NARRATOR IN ALL LOBBIES
-  // ALSO TODO: ALLOW NARRATOR TO CHANGE NAMES AND KICK PEOPLE
   useEffect(() => {
     const fetchRoom = async () => {
       const data = await getRoom(roomId);
@@ -132,6 +132,26 @@ const Lobby = () => {
     }
   };
 
+  const onNameChange = async (playerId, newName) => {
+    try {
+      await updatePlayerName(roomId, playerId, newName);
+    } catch (err) {
+      console.error("Failed to update player name:", err);
+      toast.error("Could not change name. Try again.");
+    }
+  };
+
+  const kickPlayer = async (playerId) => {
+    if (!window.confirm("Are you sure you want to kick this player?")) return;
+
+    try {
+      await removePlayerFromRoom(roomId, playerId);
+    } catch (err) {
+      console.error("Failed to kick player from room:", err);
+      toast.error("Eror kicking player. Try again.");
+    }
+  };
+
   if (!roomData) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -175,6 +195,9 @@ const Lobby = () => {
             more needed)
           </p>
         )}
+        <p className="text-sm mt-2 text-accent-gold-500">
+          Narrator Tip: You can edit names by clicking on them!
+        </p>
         <div className="flex flex-col gap-2 mt-4">
           {players.map((player) => (
             <PlayerCard
@@ -183,12 +206,16 @@ const Lobby = () => {
               emoji={player.emoji}
               onEmojiClick={() => handleEmojiClick(player.id)}
               isCurrentUser={player.id === currentPlayer?.id}
+              isNarrator={currentPlayer?.isNarrator}
+              onNameChange={(newName) => onNameChange(player.id, newName)}
+              onKick={() => kickPlayer(player.id)}
             />
           ))}
         </div>
         <p className="text-sm mt-2 text-gray-300">
           Tap your emoji to change it to a random one!
         </p>
+        {/* TODO: ADD EDIT ROLES BUTTON THAT NARRATOR CAN SEE THAT ALLOWS THEM TO EDIT/ADD NEW ROLES */}
         <div className="mt-3 border-t border-gray-600 pt-4">
           <h2 className="text-xl font-bold mb-2 text-gray-100">
             Roles in this Game:

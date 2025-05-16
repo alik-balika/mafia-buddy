@@ -99,3 +99,10 @@ export const getPlayerRole = async (roomId, playerId) => {
     throw new Error(error.message);
   }
 };
+
+export const updatePlayerName = async (roomId, playerId, newName) => {
+  const playerRef = doc(db, "rooms", roomId, "players", playerId);
+  await updateDoc(playerRef, {
+    name: newName,
+  });
+};
