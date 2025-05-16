@@ -1,5 +1,8 @@
 import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+
+import { db } from "../firebase/firebase";
 import { getRoom, getPlayerRole } from "../firebase/firestore/rooms";
 import { toast } from "react-toastify";
 
@@ -11,6 +14,7 @@ const RoleReveal = () => {
   const [role, setRole] = useState(null);
   const [room, setRoom] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [alivePlayers, setAlivePlayers] = useState([]);
 
   useEffect(() => {
     const playerId = localStorage.getItem("playerId").trim();
@@ -43,8 +47,22 @@ const RoleReveal = () => {
     };
 
     fetchData();
+
+    const playersRef = collection(db, "rooms", roomId, "players");
+    const q = query(playersRef, where("alive", "==", true));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const alive = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAlivePlayers(alive);
+    });
+
+    return () => unsubscribe();
   }, [roomId]);
 
+  // TODO: MAKE THIS PAGE MORE SEXY
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -78,6 +96,14 @@ const RoleReveal = () => {
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-80 text-center">
         <p className="text-xl font-bold mb-2">{role.name}</p>
         <p className="text-gray-300 text-sm">{role.description}</p>
+      </div>
+      <div className="mt-8 text-center">
+        <h2 className="text-xl font-semibold mb-2">Players Still Alive:</h2>
+        <ul className="space-y-1 text-gray-300">
+          {alivePlayers.map((player) => (
+            <li key={player.id}>🟢 {player.name}</li>
+          ))}
+        </ul>
       </div>
     </div>
   );

@@ -59,6 +59,7 @@ export const joinRoom = async (roomId, playerName) => {
     emoji: getRandomEmoji(),
     role: null,
     isNarrator: false,
+    alive: true,
     joinedAt: serverTimestamp(),
   });
 
