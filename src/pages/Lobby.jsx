@@ -18,6 +18,7 @@ import {
   changePlayerEmoji,
   removePlayerFromRoom,
   updatePlayerName,
+  startGame,
 } from "../firebase/firestore/rooms";
 
 const Lobby = () => {
@@ -148,7 +149,18 @@ const Lobby = () => {
       await removePlayerFromRoom(roomId, playerId);
     } catch (err) {
       console.error("Failed to kick player from room:", err);
-      toast.error("Eror kicking player. Try again.");
+      toast.error("Error kicking player. Try again.");
+    }
+  };
+
+  const handleStartGame = async () => {
+    if (!window.confirm("Click ok to start the game")) return;
+
+    try {
+      await startGame(roomId);
+    } catch (error) {
+      console.error("Failed to start the game:", error);
+      toast.error("There was an issue starting the game. Please try again.");
     }
   };
 
@@ -184,6 +196,7 @@ const Lobby = () => {
             <Button
               className="flex gap-2"
               disabled={players.length < numberOfRequiredPlayers()}
+              onClick={handleStartGame}
             >
               <Play /> Start Game
             </Button>

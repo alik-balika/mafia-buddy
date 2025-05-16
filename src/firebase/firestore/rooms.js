@@ -41,7 +41,7 @@ export const joinRoom = async (roomId, playerName) => {
     throw new Error("Room does not exist");
   }
 
-  const playersRef = collection(db, `rooms/${roomId}/players`);
+  const playersRef = collection(db, "rooms", roomId, "players");
   const playersSnap = await getDocs(playersRef);
 
   playerName = playerName.trim();
@@ -68,7 +68,7 @@ export const joinRoom = async (roomId, playerName) => {
 export const changePlayerEmoji = async (roomId, playerId) => {
   const newEmoji = getRandomEmoji();
 
-  const playerRef = doc(db, `rooms/${roomId}/players`, playerId);
+  const playerRef = doc(db, "rooms", roomId, "players", playerId);
   await updateDoc(playerRef, {
     emoji: newEmoji,
   });
@@ -77,7 +77,7 @@ export const changePlayerEmoji = async (roomId, playerId) => {
 };
 
 export const removePlayerFromRoom = async (roomId, playerId) => {
-  const playerRef = doc(db, `rooms/${roomId}/players`, playerId);
+  const playerRef = doc(db, "rooms", roomId, "players", playerId);
   await deleteDoc(playerRef);
 };
 
@@ -87,7 +87,7 @@ export const getPlayerRole = async (roomId, playerId) => {
       throw new Error("Player ID not found.");
     }
 
-    const roleRef = doc(db, `rooms/${roomId}/players`, playerId);
+    const roleRef = doc(db, "rooms", roomId, "players", playerId);
     const roleSnapshot = await getDoc(roleRef);
 
     if (roleSnapshot.exists()) {
@@ -115,6 +115,18 @@ export const updateRoomRoles = async (roomId, newRolePool) => {
     });
   } catch (error) {
     console.error("Failed to update room roles:", error);
+    throw error;
+  }
+};
+
+export const startGame = async (roomId) => {
+  try {
+    const roomRef = doc(db, "rooms", roomId);
+    await updateDoc(roomRef, {
+      gameStarted: true,
+    });
+  } catch (error) {
+    console.error("Failed to start the game:", error);
     throw error;
   }
 };

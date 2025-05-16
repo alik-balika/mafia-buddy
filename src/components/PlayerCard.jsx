@@ -33,7 +33,9 @@ const PlayerCard = ({
       }`}
     >
       <div
-        className="flex items-center justify-center min-w-12 min-h-12 bg-gray-800 rounded-full text-2xl select-none cursor-pointer inset-shadow-black inset-shadow-sm"
+        className={`flex items-center justify-center min-w-12 min-h-12 bg-gray-800 rounded-full text-2xl select-none inset-shadow-black inset-shadow-sm ${
+          isCurrentUser && "cursor-pointer"
+        }`}
         onClick={onEmojiClick}
         title={isCurrentUser ? "This is you!" : name}
       >

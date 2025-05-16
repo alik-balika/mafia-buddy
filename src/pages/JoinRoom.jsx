@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "react-toastify";
 
@@ -12,6 +12,15 @@ const JoinRoom = () => {
   const [roomId, setRoomId] = useState(roomIdParam || "");
   const [playerName, setPlayerName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const storedRoomId = localStorage.getItem("roomId")?.trim();
+    const playerId = localStorage.getItem("playerId")?.trim();
+
+    if (roomIdParam && playerId && storedRoomId === roomIdParam) {
+      navigate(`/lobby/${roomIdParam}`);
+    }
+  }, [roomIdParam, navigate]);
 
   const handleJoin = async (e) => {
     e.preventDefault();
@@ -35,6 +44,7 @@ const JoinRoom = () => {
     try {
       const playerId = await joinRoom(roomId, playerName);
       localStorage.setItem("playerId", playerId);
+      localStorage.setItem("roomId", roomId);
       navigate(`/lobby/${roomId}`);
     } catch (err) {
       toast.error(err.message);

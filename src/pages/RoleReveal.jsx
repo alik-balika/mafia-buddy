@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { getRoom, getPlayerRole } from "../firebase/firestore/rooms";
 import { toast } from "react-toastify";
@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 // TODO MAKE THIS MORE OF AN ACTUAL LOOKING CARD THAT WHEN TAPPED CAN BE FLIPPED TO HIDE/REVEAL
 // ALSO, ON DEATH SHOULD BE ABLE TO SEE WHAT EVERYONE ELSE IS
 const RoleReveal = () => {
+  const navigate = useNavigate();
   const { roomId } = useParams();
   const [role, setRole] = useState(null);
   const [room, setRoom] = useState(null);
@@ -56,11 +57,7 @@ const RoleReveal = () => {
   }
 
   if (!room?.gameStarted) {
-    return (
-      <div className="flex items-center justify-center h-screen text-white text-center">
-        <p>The game has not started yet!</p>
-      </div>
-    );
+    navigate(`/lobby/${roomId}`);
   }
 
   if (!role) {
