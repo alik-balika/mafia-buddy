@@ -17,7 +17,7 @@ const RoleReveal = () => {
   const [alivePlayers, setAlivePlayers] = useState([]);
 
   useEffect(() => {
-    const playerId = localStorage.getItem("playerId").trim();
+    const playerId = localStorage.getItem("playerId")?.trim();
 
     const fetchData = async () => {
       setLoading(true);
@@ -90,6 +90,9 @@ const RoleReveal = () => {
     );
   }
 
+  // TODO: ONCE A PLAYER HAS DIED, SHOW THEM THE DEATH LIST.
+  // ADD AN EXCEPTION FOR THE REVIVOR ROLE. IF THAT ROLE IS STILL ALIVE, DO NOT SHOW DEATH LIST
+  // UNTIL THE REVIVOR IS DEAD
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
       <h1 className="text-3xl font-bold mb-4">Your Role</h1>

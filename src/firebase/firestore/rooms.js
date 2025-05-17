@@ -15,8 +15,8 @@ import { getRandomEmoji } from "../../utils";
 export const createRoom = async (roomId, rolePool) => {
   const roomData = {
     rolePool: rolePool,
-    assignedRoles: {},
     gameStarted: false,
+    gameHistory: [],
     createdAt: serverTimestamp(),
   };
 
@@ -83,21 +83,17 @@ export const removePlayerFromRoom = async (roomId, playerId) => {
 };
 
 export const getPlayerRole = async (roomId, playerId) => {
-  try {
-    if (!playerId) {
-      throw new Error("Player ID not found.");
-    }
+  if (!playerId) {
+    throw new Error("Player ID not found.");
+  }
 
-    const roleRef = doc(db, "rooms", roomId, "players", playerId);
-    const roleSnapshot = await getDoc(roleRef);
+  const roleRef = doc(db, "rooms", roomId, "players", playerId);
+  const roleSnapshot = await getDoc(roleRef);
 
-    if (roleSnapshot.exists()) {
-      return roleSnapshot.data().role;
-    } else {
-      throw new Error("Role not found for this player.");
-    }
-  } catch (error) {
-    throw new Error(error.message);
+  if (roleSnapshot.exists()) {
+    return roleSnapshot.data().role;
+  } else {
+    throw new Error("Role not found for this player.");
   }
 };
 

@@ -43,6 +43,9 @@ const Lobby = () => {
   };
 
   // TODO: ADD SUPER SECRET QUERY PARAM THAT WILL ALLOW ME PERSONALLY TO ACT AS NARRATOR IN ALL LOBBIES
+  // TODO: ALLOW NARRATOR TO PRE-ASSIGN ROLES IN LOBBY AND RANDOMIZE THE REST
+  // TODO: If player visits lobby while game is started, redirect them to role page.
+  // If they visit lobby and they are not part of the room, navigate them back to join room (Or should I put them in a waitlist to join?)
   useEffect(() => {
     const fetchRoom = async () => {
       const data = await getRoom(roomId);
@@ -80,6 +83,7 @@ const Lobby = () => {
     const player = players.find((p) => p.id === storedId);
     if (!storedId || !player) {
       localStorage.removeItem("playerId");
+      localStorage.removeItem("roomId");
       return navigate(`/join-room?roomId=${roomId}`);
     }
 

@@ -1,12 +1,214 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  doc,
+  updateDoc,
+  getDoc,
+} from "firebase/firestore";
+import { db } from "../firebase/firebase";
+import { getRoom } from "../firebase/firestore/rooms";
+import { toast } from "react-toastify";
+import { SunMoon } from "lucide-react";
+import Button from "../components/Button";
+import PlayerCard from "../components/PlayerCard";
 
 const GameRoom = () => {
-  // TODO IMPLEMENT ROLES IN GAME THAT NARRATOR CAN SEE AND KILL/BRING BACK TO LIFE AND LATER ON IT SHOULD LIVE UPDATE
-  // OTHER DEVICES BY SENDING A WEBHOOK. ONCE EVERYONE HAS DIED, WILL KICK OFF WEBHOOK TO SEND TO OTHER DEVICES NOTIFYING THEM
+  // LATER ON IT SHOULD LIVE UPDATE OTHER DEVICES BY SENDING A WEBHOOK. ONCE EVERYONE HAS DIED, WILL KICK OFF WEBHOOK TO SEND TO OTHER DEVICES NOTIFYING THEM
   // SHOULD ALSO HAVE A QUICK START BUTTON TO START A NEW GAME WITH THE CURRENT PLAYER LIST
+  const navigate = useNavigate();
+  const { roomId } = useParams();
 
-  // ALSO TODO: MAKE IT A NIGHT BY NIGHT BASIS SO THE HISTORY OF THE GAME CAN BE SEEN.
-  return <div>GameRoom</div>;
+  const [loading, setLoading] = useState(true);
+  const [room, setRoom] = useState(null);
+  const [players, setPlayers] = useState([]);
+  const [gameHistory, setGameHistory] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const roomData = await getRoom(roomId);
+
+        if (!roomData?.gameStarted) {
+          toast.info("The game has not started yet.");
+          return navigate(`/lobby/${roomId}`);
+        }
+
+        setRoom(roomData);
+        setGameHistory(roomData.gameHistory || []);
+      } catch (err) {
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    const q = query(
+      collection(db, "rooms", roomId, "players"),
+      orderBy("alive", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const updated = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      updated.sort((a, b) => {
+        if (a.alive && !b.alive) return -1;
+        if (!a.alive && b.alive) return 1;
+
+        if (!a.alive && !b.alive) {
+          return (a.deathTimestamp || 0) - (b.deathTimestamp || 0);
+        }
+
+        return 0;
+      });
+
+      setPlayers(updated);
+    });
+
+    return () => unsubscribe();
+  }, [roomId, navigate]);
+
+  useEffect(() => {
+    if (!players?.length) return;
+
+    const storedId = localStorage.getItem("playerId")?.trim();
+    const player = players.find((p) => p.id === storedId);
+    if (!storedId || !player) {
+      return navigate(`/lobby/${roomId}`);
+    }
+
+    if (!player.isNarrator) {
+      return navigate(`/lobby/${roomId}`);
+    }
+  }, [players, navigate, roomId]);
+
+  const nextNight = async () => {
+    const roomRef = doc(db, "rooms", roomId);
+    const newHistory = [
+      ...gameHistory,
+      { night: gameHistory.length + 1, deaths: [] },
+    ];
+    await updateDoc(roomRef, { gameHistory: newHistory });
+    setGameHistory(newHistory);
+  };
+
+  const toggleAlive = async (player) => {
+    const playerRef = doc(db, "rooms", roomId, "players", player.id);
+    const roomRef = doc(db, "rooms", roomId);
+    const roomSnap = await getDoc(roomRef);
+    const roomData = roomSnap.data();
+    let updatedHistory = [...(roomData.gameHistory || [])];
+
+    if (player.alive) {
+      // KILL
+      const currentNight = updatedHistory.length;
+      if (currentNight === 0 || !updatedHistory[currentNight - 1]) {
+        updatedHistory.push({ night: currentNight + 1, deaths: [player.name] });
+      } else {
+        if (!updatedHistory[currentNight - 1].deaths) {
+          updatedHistory[currentNight - 1].deaths = [];
+        }
+        updatedHistory[currentNight - 1].deaths.push(player.name);
+      }
+
+      await Promise.all([
+        updateDoc(playerRef, {
+          alive: false,
+          deathTimestamp: Date.now(),
+        }),
+        updateDoc(roomRef, { gameHistory: updatedHistory }),
+      ]);
+      setGameHistory(updatedHistory);
+    } else {
+      // REVIVE
+      await updateDoc(playerRef, {
+        alive: true,
+        deathTimestamp: null,
+      });
+
+      updatedHistory = updatedHistory.map((night) => ({
+        ...night,
+        deaths: night.deaths?.filter((name) => name !== player.name) || [],
+      }));
+
+      await updateDoc(roomRef, { gameHistory: updatedHistory });
+      setGameHistory(updatedHistory);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col items-center gap-2 text-gray-300">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-gold-500"></div>
+          <p>Loading game room...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!room?.gameStarted) {
+    navigate(`/lobby/${roomId}`);
+  }
+
+  return (
+    <div>
+      <h1 className="text-3xl font-bold text-center mb-4">{roomId}</h1>
+      <div className="flex justify-center mb-4">
+        <Button className="flex items-center gap-2" onClick={nextNight}>
+          <SunMoon size={18} /> Next Night
+        </Button>
+      </div>
+
+      <div className="bg-gray-700 rounded p-6 shadow-md shadow-black">
+        <p className="font-bold text-xl mb-2">Players ({players.length})</p>
+        <div className="flex flex-col gap-2">
+          {players
+            .filter((player) => !player.isNarrator)
+            .map((player) => (
+              <div
+                key={player.id}
+                className="flex items-center justify-between"
+              >
+                <PlayerCard
+                  name={player.name}
+                  emoji={player.emoji}
+                  alive={player.alive}
+                  toggleAlive={() => toggleAlive(player)}
+                />
+              </div>
+            ))}
+        </div>
+
+        <div className="mt-6 border-t border-gray-600 pt-4">
+          <h2 className="text-xl font-bold text-gray-100 mb-2">Game History</h2>
+          {gameHistory.length === 0 ? (
+            <p className="text-gray-400 italic">No history yet.</p>
+          ) : (
+            <ul className="space-y-1 text-gray-300">
+              {gameHistory.map((night, index) => (
+                <li key={`night-${index}`}>
+                  <span className="font-bold">Night {night.night}:</span>{" "}
+                  {night.deaths?.length > 0
+                    ? night.deaths.join(", ")
+                    : "No deaths"}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default GameRoom;
