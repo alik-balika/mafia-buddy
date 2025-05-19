@@ -8,6 +8,8 @@ import {
   doc,
   updateDoc,
   getDoc,
+  getDocs,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { getRoom } from "../firebase/firestore/rooms";
@@ -26,6 +28,7 @@ const GameRoom = () => {
   const [room, setRoom] = useState(null);
   const [players, setPlayers] = useState([]);
   const [gameHistory, setGameHistory] = useState([]);
+  const [winner, setWinner] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,6 +75,31 @@ const GameRoom = () => {
       });
 
       setPlayers(updated);
+
+      const mafiaRoles = ["mafia", "mafia godfather"];
+
+      const aliveMafia = updated.filter(
+        (p) =>
+          p.alive && mafiaRoles.includes(p.role?.toLowerCase()) && !p.isNarrator
+      );
+
+      const aliveTown = updated.filter(
+        (p) =>
+          p.alive &&
+          !mafiaRoles.includes(p.role?.toLowerCase()) &&
+          !p.isNarrator
+      );
+      console.log("aliveTown", aliveTown);
+      console.log("aliveMafia", aliveMafia);
+
+      if (aliveMafia.length === 0 && aliveTown.length > 0) {
+        // TODO SEND WEBHOOKS TO MAFIAS/VILLAGERS INFORMING THEM THEY WON/LOST RESPECTIVELY
+        toast.success("🎉 Town wins!");
+        setWinner("town");
+      } else if (aliveTown.length === 0 && aliveMafia.length > 0) {
+        toast.success("🕵️ Mafia wins!");
+        setWinner("mafia");
+      }
     });
 
     return () => unsubscribe();
@@ -134,15 +162,33 @@ const GameRoom = () => {
         alive: true,
         deathTimestamp: null,
       });
-
-      updatedHistory = updatedHistory.map((night) => ({
-        ...night,
-        deaths: night.deaths?.filter((name) => name !== player.name) || [],
-      }));
-
-      await updateDoc(roomRef, { gameHistory: updatedHistory });
-      setGameHistory(updatedHistory);
     }
+  };
+
+  const handleStartNewGame = async () => {
+    const roomRef = doc(db, "rooms", roomId);
+    const playerSnap = await getDocs(
+      collection(db, "rooms", roomId, "players")
+    );
+    const batch = writeBatch(db);
+
+    playerSnap.forEach((docSnap) => {
+      const playerRef = doc(db, "rooms", roomId, "players", docSnap.id);
+      batch.update(playerRef, {
+        alive: true,
+        deathTimestamp: null,
+        role: null,
+      });
+    });
+
+    batch.update(roomRef, {
+      gameStarted: false,
+      gameHistory: [],
+    });
+
+    await batch.commit();
+    toast.info("New game ready! Returning to lobby...");
+    navigate(`/lobby/${roomId}`);
   };
 
   if (loading) {
@@ -167,6 +213,15 @@ const GameRoom = () => {
         <Button className="flex items-center gap-2" onClick={nextNight}>
           <SunMoon size={18} /> Next Night
         </Button>
+        {winner && (
+          <Button
+            className="ml-2"
+            onClick={handleStartNewGame}
+            variant="secondary"
+          >
+            🔁 Start a New Game
+          </Button>
+        )}
       </div>
 
       <div className="bg-gray-700 rounded p-6 shadow-md shadow-black">
