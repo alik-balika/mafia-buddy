@@ -12,6 +12,8 @@ const PlayerCard = ({
   onNameChange,
   onKick,
   toggleAlive,
+  roleName,
+  roleDescription,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(name);
@@ -28,7 +30,7 @@ const PlayerCard = ({
 
   return (
     <div
-      className={`flex items-center justify-between gap-4 p-3 rounded-xl shadow-md w-full max-w-md mx-auto transition-all duration-300
+      className={`flex flex-col gap-2 p-3 rounded-xl shadow-md w-full max-w-md mx-auto transition-all duration-300
         ${
           isCurrentUser
             ? "bg-accent-gold-900 border-2 border-accent-gold-500"
@@ -37,7 +39,7 @@ const PlayerCard = ({
       `}
     >
       <div
-        className={`flex items-center gap-4 flex-1 ${
+        className={`flex items-center justify-between gap-4 ${
           !alive ? "opacity-50 grayscale" : ""
         }`}
       >
@@ -108,17 +110,33 @@ const PlayerCard = ({
             )}
           </div>
         )}
+
+        {toggleAlive && (
+          <Button
+            bgColor={alive ? "primary" : "gray"}
+            className="ml-4 flex items-center gap-1 text-sm whitespace-nowrap"
+            onClick={toggleAlive}
+          >
+            {alive ? <Skull size={16} /> : <Heart size={16} />}
+            {alive ? "Kill" : "Revive"}
+          </Button>
+        )}
       </div>
 
-      {toggleAlive && (
-        <Button
-          bgColor={alive ? "primary" : "gray"}
-          className="ml-4 flex items-center gap-1 text-sm whitespace-nowrap"
-          onClick={toggleAlive}
-        >
-          {alive ? <Skull size={16} /> : <Heart size={16} />}
-          {alive ? "Kill" : "Revive"}
-        </Button>
+      {(roleName || roleDescription) && (
+        <div>
+          {roleName && (
+            <div className="text-sm font-semibold text-white">
+              {roleName}:
+              {roleDescription && (
+                <span className="text-xs text-gray-300">
+                  {" "}
+                  {roleDescription}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

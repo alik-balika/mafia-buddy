@@ -168,6 +168,9 @@ const Lobby = () => {
 
     try {
       await startGame(roomId);
+
+      const navigateTo = currentPlayer.isNarrator ? "game-room" : "role-reveal";
+      navigate(`/${navigateTo}/${roomId}`);
     } catch (error) {
       console.error("Failed to start the game:", error);
       toast.error("There was an issue starting the game. Please try again.");

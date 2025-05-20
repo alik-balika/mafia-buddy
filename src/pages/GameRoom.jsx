@@ -224,24 +224,40 @@ const GameRoom = () => {
         )}
       </div>
 
+      {/* TBH I MAY END UP REDOING MOST OF THIS. BUT, WILL NEED TO ADD ROLES TO EACH PLAYER IN THE PLAYER CARD */}
       <div className="bg-gray-700 rounded p-6 shadow-md shadow-black">
         <p className="font-bold text-xl mb-2">Players ({players.length})</p>
         <div className="flex flex-col gap-2">
           {players
             .filter((player) => !player.isNarrator)
-            .map((player) => (
-              <div
-                key={player.id}
-                className="flex items-center justify-between"
-              >
-                <PlayerCard
-                  name={player.name}
-                  emoji={player.emoji}
-                  alive={player.alive}
-                  toggleAlive={() => toggleAlive(player)}
-                />
-              </div>
-            ))}
+            .map((player) => {
+              const matchingRole = room.rolePool.find(
+                (role) => role.name === player.role
+              );
+
+              // TODO: EXTRACT THIS VILLAGER TEXT SOMEWHERE ELSE
+              const roleDescription =
+                matchingRole?.description ??
+                (player.role === "Villager"
+                  ? "An ordinary townsperson with no special abilities. Try to survive and help uncover the Mafia"
+                  : undefined);
+
+              return (
+                <div
+                  key={player.id}
+                  className="flex items-center justify-between"
+                >
+                  <PlayerCard
+                    name={player.name}
+                    emoji={player.emoji}
+                    alive={player.alive}
+                    toggleAlive={() => toggleAlive(player)}
+                    roleName={player.role}
+                    roleDescription={roleDescription}
+                  />
+                </div>
+              );
+            })}
         </div>
 
         <div className="mt-6 border-t border-gray-600 pt-4">

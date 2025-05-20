@@ -8,6 +8,7 @@ import {
   getDoc,
   updateDoc,
   deleteDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 import { getRandomEmoji } from "../../utils";
@@ -132,15 +133,51 @@ export const updateRoomRoles = async (roomId, newRolePool) => {
   }
 };
 
-// TODO: RANDOMIZE ROLES
+// yes I know this function is large and could be refactored but I can't be bothered
 export const startGame = async (roomId) => {
-  try {
-    const roomRef = doc(db, "rooms", roomId);
-    await updateDoc(roomRef, {
-      gameStarted: true,
-    });
-  } catch (error) {
-    console.error("Failed to start the game:", error);
-    throw error;
+  const roomRef = doc(db, "rooms", roomId);
+
+  const roomSnap = await getDoc(roomRef);
+  if (!roomSnap.exists()) {
+    throw new Error("Room does not exist");
   }
+
+  const roomData = roomSnap.data();
+
+  const playerSnap = await getDocs(collection(db, "rooms", roomId, "players"));
+  const players = playerSnap.docs;
+
+  const activePlayers = players.filter((doc) => !doc.data().isNarrator);
+  const assignedRoles = roomData.rolePool.flatMap((role) =>
+    Array(role.count).fill(role.name)
+  );
+
+  const numVillagersNeeded = activePlayers.length - assignedRoles.length;
+  if (numVillagersNeeded < 0) {
+    throw new Error("More roles than players — reduce role counts");
+  }
+
+  const allRoles = assignedRoles.concat(
+    Array(numVillagersNeeded).fill("Villager")
+  );
+
+  // shuffle the roles
+  for (let i = allRoles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allRoles[i], allRoles[j]] = [allRoles[j], allRoles[i]];
+  }
+
+  const batch = writeBatch(db);
+  activePlayers.forEach((docSnap, index) => {
+    const playerRef = doc(db, "rooms", roomId, "players", docSnap.id);
+    batch.update(playerRef, {
+      role: allRoles[index],
+    });
+  });
+
+  batch.update(roomRef, {
+    gameStarted: true,
+  });
+
+  await batch.commit();
 };
