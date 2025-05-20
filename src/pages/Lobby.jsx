@@ -90,18 +90,24 @@ const Lobby = () => {
     setCurrentPlayer(player);
   }, [players, navigate, roomId]);
 
+  useEffect(() => {
+    if (!roomData || !currentPlayer) return;
+
+    if (!roomData.gameStarted) {
+      return;
+    }
+
+    const navigateTo = currentPlayer.isNarrator ? "game-room" : "role-reveal";
+    navigate(`/${navigateTo}/${roomId}`);
+  }, [roomData, currentPlayer, navigate, roomId]);
+
   const handleEmojiClick = async (clickedPlayerId) => {
     if (clickedPlayerId !== currentPlayer.id || emojiClickCooldown) return;
 
     setEmojiClickCooldown(true);
 
     try {
-      const newEmoji = await changePlayerEmoji(roomId, clickedPlayerId);
-      setPlayers((prevPlayers) =>
-        prevPlayers.map((p) =>
-          p.id === clickedPlayerId ? { ...p, emoji: newEmoji } : p
-        )
-      );
+      await changePlayerEmoji(roomId, clickedPlayerId);
     } catch (error) {
       console.error("Failed to update emoji:", error);
     }
@@ -168,7 +174,7 @@ const Lobby = () => {
     }
   };
 
-  if (!roomData) {
+  if (!roomData && !currentPlayer) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="flex flex-col items-center gap-2 text-gray-300">
@@ -250,7 +256,7 @@ const Lobby = () => {
             )}
           </div>
           <ul className="space-y-1">
-            {roomData.rolePool.map((role, idx) => (
+            {roomData?.rolePool.map((role, idx) => (
               <li key={`${role.name}-${idx}`} className="text-gray-200">
                 {role.name}{" "}
                 <span className="font-semibold">(x{role.count})</span>

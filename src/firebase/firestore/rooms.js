@@ -13,6 +13,10 @@ import { v4 as uuidv4 } from "uuid";
 import { getRandomEmoji } from "../../utils";
 
 export const createRoom = async (roomId, rolePool) => {
+  if (!roomId) {
+    throw new Error("roomId is invalid!");
+  }
+
   const roomData = {
     rolePool: rolePool,
     gameStarted: false,
@@ -20,7 +24,7 @@ export const createRoom = async (roomId, rolePool) => {
     createdAt: serverTimestamp(),
   };
 
-  await setDoc(doc(db, "rooms", roomId), roomData);
+  await setDoc(doc(db, "rooms", roomId.toUpperCase()), roomData);
 };
 
 export const getRoom = async (roomId) => {
@@ -34,11 +38,23 @@ export const getRoom = async (roomId) => {
 };
 
 export const joinRoom = async (roomId, playerName) => {
+  if (!roomId) {
+    throw new Error("Please enter a valid roomId");
+  }
+
+  roomId = roomId.toUpperCase();
+
   const roomRef = doc(db, "rooms", roomId);
   const roomSnap = await getDoc(roomRef);
 
   if (!roomSnap.exists()) {
     throw new Error("Room does not exist");
+  }
+
+  const roomData = roomSnap.data();
+
+  if (roomData.gameStarted) {
+    throw new Error("Cannot join, the game has already started.");
   }
 
   const playersRef = collection(db, "rooms", roomId, "players");
@@ -116,6 +132,7 @@ export const updateRoomRoles = async (roomId, newRolePool) => {
   }
 };
 
+// TODO: RANDOMIZE ROLES
 export const startGame = async (roomId) => {
   try {
     const roomRef = doc(db, "rooms", roomId);
