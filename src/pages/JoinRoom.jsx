@@ -62,7 +62,7 @@ const JoinRoom = () => {
             type="text"
             placeholder="Room ID"
             value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
+            onChange={(e) => setRoomId(e.target.value.toUpperCase())}
             className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 text-white"
           />
         )}

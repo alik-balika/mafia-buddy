@@ -17,6 +17,7 @@ const PlayerCard = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(name);
+  const mafiaRoles = ["mafia", "mafia godfather"];
 
   const handleNameSubmit = (e) => {
     e.preventDefault();
@@ -31,12 +32,21 @@ const PlayerCard = ({
   return (
     <div
       className={`flex flex-col gap-2 p-3 rounded-xl shadow-md w-full max-w-md mx-auto transition-all duration-300
-        ${
-          isCurrentUser
-            ? "bg-accent-gold-900 border-2 border-accent-gold-500"
-            : "bg-gray-600"
-        }
-      `}
+    ${
+      isCurrentUser
+        ? "bg-accent-gold-900 border-2 border-accent-gold-500"
+        : "bg-gray-600"
+    }
+    ${
+      roleName
+        ? `border-2 ${
+            mafiaRoles.includes(roleName.toLowerCase())
+              ? "border-red-500"
+              : "border-blue-500"
+          }`
+        : ""
+    }
+  `}
     >
       <div
         className={`flex items-center justify-between gap-4 ${

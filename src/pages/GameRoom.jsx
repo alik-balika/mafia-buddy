@@ -17,6 +17,7 @@ import { toast } from "react-toastify";
 import { SunMoon } from "lucide-react";
 import Button from "../components/Button";
 import PlayerCard from "../components/PlayerCard";
+import roles from "../assets/roles.json";
 
 const GameRoom = () => {
   // LATER ON IT SHOULD LIVE UPDATE OTHER DEVICES BY SENDING A WEBHOOK. ONCE EVERYONE HAS DIED, WILL KICK OFF WEBHOOK TO SEND TO OTHER DEVICES NOTIFYING THEM
@@ -30,6 +31,7 @@ const GameRoom = () => {
   const [gameHistory, setGameHistory] = useState([]);
   const [winner, setWinner] = useState(null);
 
+  // TODO: REWORK CURRENT NIGHT LOGIC IN THIS PAGE TO USE CURRENT NIGHT FROM THE ROOM INSTEAD
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -76,6 +78,8 @@ const GameRoom = () => {
 
       setPlayers(updated);
 
+      // TODO: HMMM INSTEAD OF DOING THIS, ADD A TEAM FIELD OR SOMETHING TO EACH ROLE AND MAKE IT MAFIA OR TOWN
+      // WILL DEFINITELY NEED TO REWORK SOME OF THE LOGIC
       const mafiaRoles = ["mafia", "mafia godfather"];
 
       const aliveMafia = updated.filter(
@@ -89,16 +93,15 @@ const GameRoom = () => {
           !mafiaRoles.includes(p.role?.toLowerCase()) &&
           !p.isNarrator
       );
-      console.log("aliveTown", aliveTown);
-      console.log("aliveMafia", aliveMafia);
 
       if (aliveMafia.length === 0 && aliveTown.length > 0) {
-        // TODO SEND WEBHOOKS TO MAFIAS/VILLAGERS INFORMING THEM THEY WON/LOST RESPECTIVELY
         toast.success("🎉 Town wins!");
         setWinner("town");
+        updateDoc(doc(db, "rooms", roomId), { winner: "town" });
       } else if (aliveTown.length === 0 && aliveMafia.length > 0) {
         toast.success("🕵️ Mafia wins!");
         setWinner("mafia");
+        updateDoc(doc(db, "rooms", roomId), { winner: "mafia" });
       }
     });
 
@@ -182,8 +185,10 @@ const GameRoom = () => {
     });
 
     batch.update(roomRef, {
+      currentNight: 1,
       gameStarted: false,
       gameHistory: [],
+      winner: null,
     });
 
     await batch.commit();
@@ -204,6 +209,7 @@ const GameRoom = () => {
 
   if (!room?.gameStarted) {
     navigate(`/lobby/${roomId}`);
+    return null;
   }
 
   return (
@@ -238,9 +244,7 @@ const GameRoom = () => {
               // TODO: EXTRACT THIS VILLAGER TEXT SOMEWHERE ELSE
               const roleDescription =
                 matchingRole?.description ??
-                (player.role === "Villager"
-                  ? "An ordinary townsperson with no special abilities. Try to survive and help uncover the Mafia"
-                  : undefined);
+                (player.role === "Villager" ? roles["villager"] : undefined);
 
               return (
                 <div
@@ -265,13 +269,16 @@ const GameRoom = () => {
           {gameHistory.length === 0 ? (
             <p className="text-gray-400 italic">No history yet.</p>
           ) : (
-            <ul className="space-y-1 text-gray-300">
-              {gameHistory.map((night, index) => (
-                <li key={`night-${index}`}>
-                  <span className="font-bold">Night {night.night}:</span>{" "}
-                  {night.deaths?.length > 0
-                    ? night.deaths.join(", ")
-                    : "No deaths"}
+            <ul className="space-y-2">
+              {gameHistory.map((night, i) => (
+                <li key={i} className="border-l-2 border-accent-gold-500 pl-4">
+                  <p className="text-lg font-semibold">
+                    🌙 Night {night.night}
+                  </p>
+                  <p className="text-gray-300 text-sm">
+                    <span className="font-medium">Players Killed:</span>{" "}
+                    {night.deaths?.length ? night.deaths.join(", ") : "None"}
+                  </p>
                 </li>
               ))}
             </ul>

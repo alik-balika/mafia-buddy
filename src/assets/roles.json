@@ -74,5 +74,6 @@
       "name": "Framer",
       "description": "Frames a player each night to appear guilty to Cops. Wins with the mafias"
     }
-  ]
+  ],
+  "villager": "An ordinary townsperson with no special abilities. Try to survive and help uncover the Mafia"
 }

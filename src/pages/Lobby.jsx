@@ -14,7 +14,6 @@ import Button from "../components/Button";
 import PlayerCard from "../components/PlayerCard";
 import { db } from "../firebase/firebase";
 import {
-  getRoom,
   changePlayerEmoji,
   removePlayerFromRoom,
   updatePlayerName,
@@ -28,6 +27,8 @@ const Lobby = () => {
   const [players, setPlayers] = useState([]);
   const [emojiClickCooldown, setEmojiClickCooldown] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState(null);
+  const [showCountdown, setShowCountdown] = useState(false);
+  const [countdownValue, setCountdownValue] = useState(3);
 
   const copyLinkNotification = () => {
     const inviteLink = `${window.location.origin}/join-room?roomId=${roomId}`;
@@ -44,18 +45,20 @@ const Lobby = () => {
 
   // TODO: ADD SUPER SECRET QUERY PARAM THAT WILL ALLOW ME PERSONALLY TO ACT AS NARRATOR IN ALL LOBBIES
   // TODO: ALLOW NARRATOR TO PRE-ASSIGN ROLES IN LOBBY AND RANDOMIZE THE REST
-  // TODO: If player visits lobby while game is started, redirect them to role page.
-  // If they visit lobby and they are not part of the room, navigate them back to join room (Or should I put them in a waitlist to join?)
   useEffect(() => {
-    const fetchRoom = async () => {
-      const data = await getRoom(roomId);
-      if (data) {
-        setRoomData(data);
-      }
-    };
+    const roomRef = doc(db, "rooms", roomId);
 
-    fetchRoom();
-  }, [roomId]);
+    const unsubscribe = onSnapshot(roomRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setRoomData({ id: docSnap.id, ...docSnap.data() });
+      } else {
+        toast.error("Room not found.");
+        navigate("/");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [roomId, navigate]);
 
   useEffect(() => {
     const roomRef = doc(db, "rooms", roomId);
@@ -97,8 +100,23 @@ const Lobby = () => {
       return;
     }
 
-    const navigateTo = currentPlayer.isNarrator ? "game-room" : "role-reveal";
-    navigate(`/${navigateTo}/${roomId}`);
+    setShowCountdown(true);
+    setCountdownValue(3);
+
+    const interval = setInterval(() => {
+      setCountdownValue((prev) => {
+        if (prev === 1) {
+          clearInterval(interval);
+          const navigateTo = currentPlayer.isNarrator
+            ? "game-room"
+            : "role-reveal";
+          navigate(`/${navigateTo}/${roomId}`);
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, [roomData, currentPlayer, navigate, roomId]);
 
   const handleEmojiClick = async (clickedPlayerId) => {
@@ -241,7 +259,6 @@ const Lobby = () => {
         <p className="text-sm mt-2 text-gray-300">
           Tap your emoji to change it to a random one!
         </p>
-        {/* TODO: ADD EDIT ROLES BUTTON THAT NARRATOR CAN SEE THAT ALLOWS THEM TO EDIT/ADD NEW ROLES */}
         <div className="mt-3 border-t border-gray-600 pt-4">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-xl font-bold text-gray-100">
@@ -268,6 +285,16 @@ const Lobby = () => {
           </ul>
         </div>
       </div>
+      {showCountdown && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+          <div className="text-center text-white">
+            <p className="text-2xl mb-4">Game is starting in...</p>
+            <div className="text-6xl font-bold animate-pulse">
+              {countdownValue}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
