@@ -7,12 +7,10 @@ import {
   query,
   doc,
   updateDoc,
-  getDoc,
   getDocs,
   writeBatch,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
-import { getRoom } from "../firebase/firestore/rooms";
 import { toast } from "react-toastify";
 import { SunMoon } from "lucide-react";
 import Button from "../components/Button";
@@ -20,39 +18,41 @@ import PlayerCard from "../components/PlayerCard";
 import roles from "../assets/roles.json";
 
 const GameRoom = () => {
-  // LATER ON IT SHOULD LIVE UPDATE OTHER DEVICES BY SENDING A WEBHOOK. ONCE EVERYONE HAS DIED, WILL KICK OFF WEBHOOK TO SEND TO OTHER DEVICES NOTIFYING THEM
-  // SHOULD ALSO HAVE A QUICK START BUTTON TO START A NEW GAME WITH THE CURRENT PLAYER LIST
   const navigate = useNavigate();
   const { roomId } = useParams();
 
   const [loading, setLoading] = useState(true);
   const [room, setRoom] = useState(null);
   const [players, setPlayers] = useState([]);
-  const [gameHistory, setGameHistory] = useState([]);
   const [winner, setWinner] = useState(null);
 
-  // TODO: REWORK CURRENT NIGHT LOGIC IN THIS PAGE TO USE CURRENT NIGHT FROM THE ROOM INSTEAD
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const roomData = await getRoom(roomId);
+    const roomRef = doc(db, "rooms", roomId);
 
-        if (!roomData?.gameStarted) {
+    const unsubscribeRoom = onSnapshot(
+      roomRef,
+      (snapshot) => {
+        const data = snapshot.data();
+        if (!data?.gameStarted) {
           toast.info("The game has not started yet.");
           return navigate(`/lobby/${roomId}`);
         }
 
-        setRoom(roomData);
-        setGameHistory(roomData.gameHistory || []);
-      } catch (err) {
-        toast.error(err.message);
-      } finally {
+        setRoom({ id: snapshot.id, ...data });
         setLoading(false);
+      },
+      (err) => {
+        toast.error(err.message);
       }
-    };
+    );
 
-    fetchData();
+    return () => unsubscribeRoom();
+  }, [roomId, navigate]);
+
+  useEffect(() => {
+    if (!room?.gameStarted) {
+      return;
+    }
 
     const q = query(
       collection(db, "rooms", roomId, "players"),
@@ -106,7 +106,7 @@ const GameRoom = () => {
     });
 
     return () => unsubscribe();
-  }, [roomId, navigate]);
+  }, [roomId, navigate, room?.gameStarted]);
 
   useEffect(() => {
     if (!players?.length) return;
@@ -124,26 +124,29 @@ const GameRoom = () => {
 
   const nextNight = async () => {
     const roomRef = doc(db, "rooms", roomId);
+    const newNight = room.currentNight + 1;
     const newHistory = [
-      ...gameHistory,
-      { night: gameHistory.length + 1, deaths: [] },
+      ...(room.gameHistory || []),
+      { night: newNight, deaths: [] },
     ];
-    await updateDoc(roomRef, { gameHistory: newHistory });
-    setGameHistory(newHistory);
+
+    await updateDoc(roomRef, {
+      currentNight: newNight,
+      gameHistory: newHistory,
+    });
   };
 
   const toggleAlive = async (player) => {
     const playerRef = doc(db, "rooms", roomId, "players", player.id);
     const roomRef = doc(db, "rooms", roomId);
-    const roomSnap = await getDoc(roomRef);
-    const roomData = roomSnap.data();
-    let updatedHistory = [...(roomData.gameHistory || [])];
+
+    let updatedHistory = [...(room?.gameHistory || [])];
+    const currentNight = room.currentNight;
 
     if (player.alive) {
       // KILL
-      const currentNight = updatedHistory.length;
-      if (currentNight === 0 || !updatedHistory[currentNight - 1]) {
-        updatedHistory.push({ night: currentNight + 1, deaths: [player.name] });
+      if (updatedHistory.length < currentNight) {
+        updatedHistory.push({ night: currentNight, deaths: [player.name] });
       } else {
         if (!updatedHistory[currentNight - 1].deaths) {
           updatedHistory[currentNight - 1].deaths = [];
@@ -158,7 +161,6 @@ const GameRoom = () => {
         }),
         updateDoc(roomRef, { gameHistory: updatedHistory }),
       ]);
-      setGameHistory(updatedHistory);
     } else {
       // REVIVE
       await updateDoc(playerRef, {
@@ -207,11 +209,6 @@ const GameRoom = () => {
     );
   }
 
-  if (!room?.gameStarted) {
-    navigate(`/lobby/${roomId}`);
-    return null;
-  }
-
   return (
     <div>
       <h1 className="text-3xl font-bold text-center mb-4">{roomId}</h1>
@@ -241,7 +238,6 @@ const GameRoom = () => {
                 (role) => role.name === player.role
               );
 
-              // TODO: EXTRACT THIS VILLAGER TEXT SOMEWHERE ELSE
               const roleDescription =
                 matchingRole?.description ??
                 (player.role === "Villager" ? roles["villager"] : undefined);
@@ -266,11 +262,11 @@ const GameRoom = () => {
 
         <div className="mt-6 border-t border-gray-600 pt-4">
           <h2 className="text-xl font-bold text-gray-100 mb-2">Game History</h2>
-          {gameHistory.length === 0 ? (
+          {room?.gameHistory.length === 0 ? (
             <p className="text-gray-400 italic">No history yet.</p>
           ) : (
             <ul className="space-y-2">
-              {gameHistory.map((night, i) => (
+              {room?.gameHistory.map((night, i) => (
                 <li key={i} className="border-l-2 border-accent-gold-500 pl-4">
                   <p className="text-lg font-semibold">
                     🌙 Night {night.night}
