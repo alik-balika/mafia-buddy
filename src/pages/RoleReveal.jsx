@@ -5,7 +5,6 @@ import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { getPlayerRole } from "../firebase/firestore/rooms";
 import { toast } from "react-toastify";
-import roles from "../assets/roles.json";
 
 // TODO MAKE THIS MORE OF AN ACTUAL LOOKING CARD THAT WHEN TAPPED CAN BE FLIPPED TO HIDE/REVEAL
 // ALSO, ON DEATH SHOULD BE ABLE TO SEE WHAT EVERYONE ELSE IS (Hmmm... Should I do this? Idk if I want to reveal TOO much info)
@@ -58,25 +57,10 @@ const RoleReveal = () => {
             (r) => r.name === assignedRole
           );
 
-          const fallbackRole = {
-            name: assignedRole,
-            description:
-              assignedRole === "Villager"
-                ? roles["villager"]
-                : "No description available.",
-          };
-
           setRoom(roomData);
-          setRole(roleFromPool || fallbackRole);
+          setRole(roleFromPool);
 
-          if (roomData.winner) {
-            const lowerWinner = roomData.winner.toLowerCase();
-            const isMafia = ["mafia", "mafia godfather"].includes(
-              (roleFromPool || fallbackRole)?.name.toLowerCase()
-            );
-            const isWinner =
-              (lowerWinner === "mafia" && isMafia) ||
-              (lowerWinner === "town" && !isMafia);
+          if (roomData.winner === roleFromPool.team) {
             setIsWinner(isWinner);
           }
         } catch (err) {
@@ -106,7 +90,7 @@ const RoleReveal = () => {
       unsubscribeRoom();
       unsubscribeAlivePlayers();
     };
-  }, [roomId, navigate]);
+  }, [roomId, navigate, isWinner]);
 
   useEffect(() => {
     const playerId = localStorage.getItem("playerId")?.trim();

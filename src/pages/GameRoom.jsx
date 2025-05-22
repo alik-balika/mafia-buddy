@@ -15,7 +15,6 @@ import { toast } from "react-toastify";
 import { SunMoon } from "lucide-react";
 import Button from "../components/Button";
 import PlayerCard from "../components/PlayerCard";
-import roles from "../assets/roles.json";
 
 const GameRoom = () => {
   const navigate = useNavigate();
@@ -60,12 +59,12 @@ const GameRoom = () => {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const updated = snapshot.docs.map((doc) => ({
+      const updatedPlayers = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
 
-      updated.sort((a, b) => {
+      updatedPlayers.sort((a, b) => {
         if (a.alive && !b.alive) return -1;
         if (!a.alive && b.alive) return 1;
 
@@ -76,37 +75,58 @@ const GameRoom = () => {
         return 0;
       });
 
-      setPlayers(updated);
+      setPlayers(updatedPlayers);
 
-      // TODO: HMMM INSTEAD OF DOING THIS, ADD A TEAM FIELD OR SOMETHING TO EACH ROLE AND MAKE IT MAFIA OR TOWN
-      // WILL DEFINITELY NEED TO REWORK SOME OF THE LOGIC
-      const mafiaRoles = ["mafia", "mafia godfather"];
+      const roleMap = {};
+      room.rolePool.forEach((r) => {
+        roleMap[r.name.toLowerCase()] = {
+          team: r.team,
+          killer: r.killer,
+        };
+      });
 
-      const aliveMafia = updated.filter(
-        (p) =>
-          p.alive && mafiaRoles.includes(p.role?.toLowerCase()) && !p.isNarrator
-      );
+      const aliveByTeam = {
+        mafia: [],
+        town: [],
+        neutral: [],
+      };
 
-      const aliveTown = updated.filter(
-        (p) =>
-          p.alive &&
-          !mafiaRoles.includes(p.role?.toLowerCase()) &&
-          !p.isNarrator
-      );
+      updatedPlayers.forEach((p) => {
+        if (!p.alive || p.isNarrator) return;
 
-      if (aliveMafia.length === 0 && aliveTown.length > 0) {
+        const role = roleMap[p.role?.toLowerCase()];
+        if (!role) return;
+
+        aliveByTeam[role.team]?.push(p);
+      });
+
+      // TODO: FIGURE OUT THESE WIN CONDITIONS. BECAUSE IF AN ARSONIST IS STILL ALIVE FOR EXAMPLE,
+      // THE GAME SHOULD KEEP ON GOING. BUT, ON THE OTHER HAND, IF A ROLE LIKE JESTER IS STILL ALIVE,
+      // THE GAME SHOULD END
+      if (aliveByTeam.mafia.length === 0 && aliveByTeam.town.length > 0) {
         toast.success("🎉 Town wins!");
         setWinner("town");
         updateDoc(doc(db, "rooms", roomId), { winner: "town" });
-      } else if (aliveTown.length === 0 && aliveMafia.length > 0) {
+      } else if (
+        aliveByTeam.town.length === 0 &&
+        aliveByTeam.mafia.length > 0
+      ) {
         toast.success("🕵️ Mafia wins!");
         setWinner("mafia");
         updateDoc(doc(db, "rooms", roomId), { winner: "mafia" });
+      } else if (
+        aliveByTeam.mafia.length === 0 &&
+        aliveByTeam.town.length === 0 &&
+        aliveByTeam.neutral.length > 0
+      ) {
+        toast.success("🎭 A neutral role wins!");
+        setWinner("neutral");
+        updateDoc(doc(db, "rooms", roomId), { winner: "neutral" });
       }
     });
 
     return () => unsubscribe();
-  }, [roomId, navigate, room?.gameStarted]);
+  }, [roomId, navigate, room]);
 
   useEffect(() => {
     if (!players?.length) return;
@@ -238,10 +258,6 @@ const GameRoom = () => {
                 (role) => role.name === player.role
               );
 
-              const roleDescription =
-                matchingRole?.description ??
-                (player.role === "Villager" ? roles["villager"] : undefined);
-
               return (
                 <div
                   key={player.id}
@@ -253,7 +269,8 @@ const GameRoom = () => {
                     alive={player.alive}
                     toggleAlive={() => toggleAlive(player)}
                     roleName={player.role}
-                    roleDescription={roleDescription}
+                    roleDescription={matchingRole?.description}
+                    roleTeam={matchingRole?.team}
                   />
                 </div>
               );

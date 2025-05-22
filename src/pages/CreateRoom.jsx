@@ -13,12 +13,22 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedGameRoles, setSelectedGameRoles] = useState(initialRoles);
   const [errors, setErrors] = useState([]);
+  const [narratorName, setNarratorName] = useState("");
 
-  const handleAddRole = (roleName, roleDescription) => {
+  const handleAddRole = (roleName, roleDescription, roleTeam, isKiller) => {
     setSelectedGameRoles((prev) =>
       prev.some((role) => role.name === roleName)
         ? prev
-        : [...prev, { name: roleName, description: roleDescription, count: 1 }]
+        : [
+            ...prev,
+            {
+              name: roleName,
+              description: roleDescription,
+              count: 1,
+              team: roleTeam,
+              killer: isKiller,
+            },
+          ]
     );
   };
 
@@ -51,9 +61,8 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
       validationErrors.push("Please select at least one role for the game.");
     }
 
-    const mafiaLikeRoles = ["Mafia", "Mafia Godfather", "Arsonist"];
     const hasMafia = selectedGameRoles.some(
-      (role) => mafiaLikeRoles.includes(role.name) && role.count > 0
+      (role) => role.killer == true && role.count > 0
     );
 
     if (!hasMafia) {
@@ -71,6 +80,10 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
       validationErrors.push("The game needs at least 3 roles.");
     }
 
+    if (!narratorName.trim()) {
+      validationErrors.push("Please enter a narrator name.");
+    }
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -79,8 +92,8 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
     if (isEditing) {
       await updateRoomRoles(roomId, selectedGameRoles);
     } else {
-      const roomId = Math.random().toString(36).substring(7).toUpperCase();
-      createRoom(roomId, selectedGameRoles);
+      roomId = Math.random().toString(36).substring(7).toUpperCase();
+      await createRoom(roomId, selectedGameRoles, narratorName);
     }
 
     navigate(`/lobby/${roomId}`);
@@ -100,7 +113,14 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
               key={role.name}
               roleName={role.name}
               roleDescription={role.description}
-              onClick={() => handleAddRole(role.name, role.description)}
+              onClick={() =>
+                handleAddRole(
+                  role.name,
+                  role.description,
+                  role.team,
+                  role.killer
+                )
+              }
             />
           ))}
         </div>
@@ -126,7 +146,14 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
                     key={role.name}
                     roleName={role.name}
                     roleDescription={role.description}
-                    onClick={() => handleAddRole(role.name, role.description)}
+                    onClick={() =>
+                      handleAddRole(
+                        role.name,
+                        role.description,
+                        role.team,
+                        role.killer
+                      )
+                    }
                   />
                 ))}
               </div>
@@ -157,6 +184,20 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
           )}
         </div>
       </div>
+      {!isEditing && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-white mb-1">
+            Narrator Name
+          </label>
+          <input
+            type="text"
+            value={narratorName}
+            onChange={(e) => setNarratorName(e.target.value)}
+            className="w-full px-3 py-2 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter your name"
+          />
+        </div>
+      )}
       {errors &&
         errors.map((error) => <p className="text-red-500 text-sm">{error}</p>)}
       <Button className="mt-2" onClick={handleCreateOrUpdateRoom}>

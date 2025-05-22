@@ -18,6 +18,7 @@ import {
   removePlayerFromRoom,
   updatePlayerName,
   startGame,
+  joinRoom,
 } from "../firebase/firestore/rooms";
 
 const Lobby = () => {
@@ -233,15 +234,18 @@ const Lobby = () => {
             </Button>
           )}
         </div>
-        {numberOfRequiredPlayers() - players.length > 0 && (
+        {/* + 1 needed here because narrator is not included */}
+        {numberOfRequiredPlayers() - players.length + 1 > 0 && (
           <p className="text-accent-gold-500 text-sm my-2 loading">
-            Waiting for players ({numberOfRequiredPlayers() - players.length}{" "}
-            more needed)
+            Waiting for players (
+            {numberOfRequiredPlayers() - players.length + 1} more needed)
           </p>
         )}
-        <p className="text-sm mt-2 text-accent-gold-500 font-bold">
-          Narrator Tip: You can edit names by clicking on them!
-        </p>
+        {currentPlayer?.isNarrator && (
+          <p className="text-sm mt-2 text-accent-gold-500 font-bold">
+            Narrator Tip: You can edit names by clicking on them!
+          </p>
+        )}
         <div className="flex flex-col gap-2 mt-4">
           {players.map((player) => (
             <PlayerCard
@@ -259,6 +263,17 @@ const Lobby = () => {
         <p className="text-sm mt-2 text-gray-300">
           Tap your emoji to change it to a random one!
         </p>
+        <p>FOR TESTING ONLY. REMOVE AFTER:</p>
+        <Button
+          onClick={() =>
+            joinRoom(
+              roomId,
+              Math.random().toString(36).substring(7).toUpperCase()
+            )
+          }
+        >
+          GENERATE RANDOM PLAYER
+        </Button>
         <div className="mt-3 border-t border-gray-600 pt-4">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-xl font-bold text-gray-100">

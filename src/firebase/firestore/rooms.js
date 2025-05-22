@@ -12,8 +12,9 @@ import {
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 import { getRandomEmoji } from "../../utils";
+import roles from "../../assets/roles.json";
 
-export const createRoom = async (roomId, rolePool) => {
+export const createRoom = async (roomId, rolePool, narratorName) => {
   if (!roomId) {
     throw new Error("roomId is invalid!");
   }
@@ -27,6 +28,9 @@ export const createRoom = async (roomId, rolePool) => {
   };
 
   await setDoc(doc(db, "rooms", roomId.toUpperCase()), roomData);
+  const playerId = await joinRoom(roomId, narratorName, true);
+  localStorage.setItem("playerId", playerId);
+  localStorage.setItem("roomId", roomId);
 };
 
 export const getRoom = async (roomId) => {
@@ -39,7 +43,7 @@ export const getRoom = async (roomId) => {
   return docSnap.data();
 };
 
-export const joinRoom = async (roomId, playerName) => {
+export const joinRoom = async (roomId, playerName, isNarrator = false) => {
   if (!roomId) {
     throw new Error("Please enter a valid roomId");
   }
@@ -76,7 +80,7 @@ export const joinRoom = async (roomId, playerName) => {
     name: playerName,
     emoji: getRandomEmoji(),
     role: null,
-    isNarrator: false,
+    isNarrator: isNarrator,
     alive: true,
     joinedAt: serverTimestamp(),
   });
@@ -149,17 +153,28 @@ export const startGame = async (roomId) => {
   const players = playerSnap.docs;
 
   const activePlayers = players.filter((doc) => !doc.data().isNarrator);
-  const assignedRoles = roomData.rolePool.flatMap((role) =>
-    Array(role.count).fill(role.name)
+  const assignedCount = roomData.rolePool.reduce(
+    (sum, role) => sum + role.count,
+    0
   );
+  const numVillagersNeeded = activePlayers.length - assignedCount;
 
-  const numVillagersNeeded = activePlayers.length - assignedRoles.length;
   if (numVillagersNeeded < 0) {
     throw new Error("More roles than players — reduce role counts");
   }
 
-  const allRoles = assignedRoles.concat(
-    Array(numVillagersNeeded).fill("Villager")
+  const finalRolePool = [...roomData.rolePool];
+  if (numVillagersNeeded > 0) {
+    finalRolePool.push({
+      name: "Villager",
+      description: roles.villager.description,
+      count: numVillagersNeeded,
+      team: "town",
+    });
+  }
+
+  const allRoles = finalRolePool.flatMap((role) =>
+    Array(role.count).fill(role.name)
   );
 
   // shuffle the roles
@@ -177,6 +192,7 @@ export const startGame = async (roomId) => {
   });
 
   batch.update(roomRef, {
+    rolePool: finalRolePool,
     gameStarted: true,
   });
 

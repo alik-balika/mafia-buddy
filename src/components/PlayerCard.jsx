@@ -14,10 +14,10 @@ const PlayerCard = ({
   toggleAlive,
   roleName,
   roleDescription,
+  roleTeam,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(name);
-  const mafiaRoles = ["mafia", "mafia godfather"];
 
   const handleNameSubmit = (e) => {
     e.preventDefault();
@@ -40,9 +40,11 @@ const PlayerCard = ({
     ${
       roleName
         ? `border-2 ${
-            mafiaRoles.includes(roleName.toLowerCase())
+            roleTeam === "mafia"
               ? "border-red-500"
-              : "border-blue-500"
+              : roleTeam === "neutral"
+              ? "border-blue-500"
+              : "border-green-500"
           }`
         : ""
     }

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Button from "./Button";
 
+// TODO: ADD OPTION TO SET TEAM TO MAFIA/TOWN/NEUTRAL
+// ALSO KILLER FIELD??
 export default function CustomRoleForm({ onAddRole }) {
   const [customRoleName, setCustomRoleName] = useState("");
   const [customRoleDescription, setCustomRoleDescription] = useState("");

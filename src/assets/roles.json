@@ -2,78 +2,118 @@
   "common": [
     {
       "name": "Mafia",
-      "description": "Works with other Mafia members to eliminate all non-mafia players"
+      "description": "Works with other Mafia members to eliminate all non-mafia players",
+      "team": "mafia",
+      "killer": true
     },
     {
       "name": "Angel",
-      "description": "Can protect one person from being killed each night (even themselves)"
+      "description": "Can protect one person from being killed each night (even themselves)",
+      "team": "town",
+      "killer": false
     },
     {
       "name": "Detective",
-      "description": "Can investigate one person each night to determine if they are a Mafia"
+      "description": "Can investigate one person each night to determine if they are a Mafia",
+      "team": "town",
+      "killer": false
     },
     {
       "name": "Suicide Bomber",
-      "description": "Can choose to take someone down with them at any point during a town meeting"
+      "description": "Can choose to take someone down with them at any point during a town meeting",
+      "team": "town",
+      "killer": false
     }
   ],
   "uncommon": [
     {
       "name": "Jester",
-      "description": "Wins by getting themselves voted out"
+      "description": "Wins by getting themselves voted out",
+      "team": "neutral",
+      "killer": false
     },
     {
       "name": "Reviver",
-      "description": "Can revive a dead person once they have been dead for at least one round"
+      "description": "Can revive a dead person once they have been dead for at least one round",
+      "team": "town",
+      "killer": false
     },
     {
       "name": "Vigilante",
-      "description": "Can choose to eliminate someone during night time but if they choose a non-mafia role they are eliminated along with the player they chose"
+      "description": "Can choose to eliminate someone during night time but if they choose a non-mafia role they are eliminated along with the player they chose",
+      "team": "town",
+      "killer": false
     },
     {
       "name": "Lover",
-      "description": "Will die if the other lover dies"
+      "description": "Will die if the other lover dies",
+      "team": "town",
+      "killer": false
     },
     {
       "name": "Tanker",
-      "description": "Requires 2 nights for mafias to be able to kill them"
+      "description": "Requires 2 nights for mafias to be able to kill them",
+      "team": "town",
+      "killer": false
     },
     {
       "name": "Blackmailer",
-      "description": "Silences a player, preventing them from speaking during discussions. Works together with the mafias"
+      "description": "Silences a player, preventing them from speaking during discussions. Works together with the mafias",
+      "team": "mafia",
+      "killer": false
     },
     {
       "name": "Mayor",
-      "description": "Can reveal their role in-game during the day. Once revealed, their vote counts as 3"
+      "description": "Can reveal their role in-game during the day. Once revealed, their vote counts as 3",
+      "team": "town",
+      "killer": false
     },
     {
       "name": "Bodyguard",
-      "description": "Can choose one player to protect each night. If the Mafia tries to kill that player, the Bodyguard dies instead"
+      "description": "Can choose one player to protect each night. If the Mafia tries to kill that player, the Bodyguard dies instead",
+      "team": "town",
+      "killer": false
     },
     {
       "name": "Mafia Godfather",
-      "description": "The leader of the Mafia. Appears innocent when investigated by the Detective"
+      "description": "The leader of the Mafia. Appears innocent when investigated by the Detective",
+      "team": "mafia",
+      "killer": true
     },
     {
       "name": "Roleblocker",
-      "description": "Prevents a target player from using their night ability"
+      "description": "Prevents a target player from using their night ability",
+      "team": "town",
+      "killer": false
     },
     {
       "name": "Executioner",
-      "description": "Assigned a random town player. Wins if that player gets voted out"
+      "description": "Assigned a random town player. Wins if that player gets voted out",
+      "team": "neutral",
+      "killer": false
     },
     {
       "name": "Arsonist",
-      "description": "Douses one person per night (point at a person to douse them). Can ignite all doused players at once to eliminate them (raise your hand to ignite). Cannot douse and ignite in the same night"
+      "description": "Douses one person per night (point at a person to douse them). Can ignite all doused players at once to eliminate them (raise your hand to ignite). Cannot douse and ignite in the same night. Wins by killing everyone else and being the last man standing",
+      "team": "neutral",
+      "killer": true
     },
     {
       "name": "Amnesiac",
-      "description": "Can choose to permanently adopt the role of a dead player"
+      "description": "Can choose to permanently adopt the role of a dead player",
+      "team": "neutral",
+      "killer": false
     },
     {
       "name": "Framer",
-      "description": "Frames a player each night to appear guilty to Cops. Wins with the mafias"
+      "description": "Frames a player each night to appear guilty to Cops. Wins with the mafias",
+      "team": "mafia",
+      "killer": false
     }
   ],
-  "villager": "An ordinary townsperson with no special abilities. Try to survive and help uncover the Mafia"
+  "villager": {
+    "description": "An ordinary townsperson with no special abilities. Try to survive and help uncover the Mafia",
+    "team": "town",
+    "killer": false
+  }
 }
