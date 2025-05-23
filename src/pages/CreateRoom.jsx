@@ -14,6 +14,7 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
   const [selectedGameRoles, setSelectedGameRoles] = useState(initialRoles);
   const [errors, setErrors] = useState([]);
   const [narratorName, setNarratorName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAddRole = (roleName, roleDescription, roleTeam, isKiller) => {
     setSelectedGameRoles((prev) =>
@@ -71,15 +72,6 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
       );
     }
 
-    const totalRoles = selectedGameRoles.reduce(
-      (sum, role) => sum + role.count,
-      0
-    );
-
-    if (totalRoles < 3) {
-      validationErrors.push("The game needs at least 3 roles.");
-    }
-
     if (!narratorName.trim()) {
       validationErrors.push("Please enter a narrator name.");
     }
@@ -89,15 +81,33 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
       return;
     }
 
-    if (isEditing) {
-      await updateRoomRoles(roomId, selectedGameRoles);
-    } else {
-      roomId = Math.random().toString(36).substring(7).toUpperCase();
-      await createRoom(roomId, selectedGameRoles, narratorName);
+    setIsLoading(true);
+    try {
+      let generatedId = roomId;
+      if (isEditing) {
+        await updateRoomRoles(roomId, selectedGameRoles);
+      } else {
+        generatedId = Math.random().toString(36).substring(7).toUpperCase();
+        await createRoom(generatedId, selectedGameRoles, narratorName);
+      }
+      navigate(`/lobby/${generatedId}`);
+      await new Promise((r) => setTimeout(r, 10000));
+    } finally {
+      setIsLoading(false);
     }
-
-    navigate(`/lobby/${roomId}`);
   };
+
+  const renderRoleOptions = (roleList) =>
+    roleList.map((role) => (
+      <RoleOption
+        key={role.name}
+        roleName={role.name}
+        roleDescription={role.description}
+        onClick={() =>
+          handleAddRole(role.name, role.description, role.team, role.killer)
+        }
+      />
+    ));
 
   return (
     <div className="flex flex-col">
@@ -108,21 +118,7 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
       <div className="mb-4">
         <h2 className="text-2xl font-bold mb-3">Select Roles</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-          {roles.common.map((role) => (
-            <RoleOption
-              key={role.name}
-              roleName={role.name}
-              roleDescription={role.description}
-              onClick={() =>
-                handleAddRole(
-                  role.name,
-                  role.description,
-                  role.team,
-                  role.killer
-                )
-              }
-            />
-          ))}
+          {renderRoleOptions(roles.common)}
         </div>
         <div className="mb-2">
           <button
@@ -141,21 +137,7 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
                 Select a less common role
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-                {roles.uncommon.map((role) => (
-                  <RoleOption
-                    key={role.name}
-                    roleName={role.name}
-                    roleDescription={role.description}
-                    onClick={() =>
-                      handleAddRole(
-                        role.name,
-                        role.description,
-                        role.team,
-                        role.killer
-                      )
-                    }
-                  />
-                ))}
+                {renderRoleOptions(roles.uncommon)}
               </div>
             </div>
             <CustomRoleForm onAddRole={handleAddRole} />
@@ -199,9 +181,23 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
         </div>
       )}
       {errors &&
-        errors.map((error) => <p className="text-red-500 text-sm">{error}</p>)}
-      <Button className="mt-2" onClick={handleCreateOrUpdateRoom}>
-        {isEditing ? "Update" : "Create"} room
+        errors.map((error, i) => (
+          <p key={i} className="text-red-500 text-sm">
+            {error}
+          </p>
+        ))}
+      <Button
+        className="mt-2"
+        onClick={handleCreateOrUpdateRoom}
+        disabled={isLoading}
+      >
+        {isLoading
+          ? isEditing
+            ? "Updating..."
+            : "Creating..."
+          : isEditing
+          ? "Update room"
+          : "Create room"}
       </Button>
       {isEditing && (
         <Button
