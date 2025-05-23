@@ -136,18 +136,23 @@ const PlayerCard = ({
       </div>
 
       {(roleName || roleDescription) && (
-        <div>
-          {roleName && (
-            <div className="text-sm font-semibold text-white">
-              {roleName}:
-              {roleDescription && (
-                <span className="text-xs text-gray-300">
-                  {" "}
-                  {roleDescription}
-                </span>
-              )}
-            </div>
+        <div className="mt-2 p-2 rounded bg-gray-700 text-white text-sm shadow-inner">
+          <div className="font-bold">{roleName}</div>
+          {roleDescription && (
+            <div className="text-gray-300 text-xs mt-1">{roleDescription}</div>
           )}
+          <div
+            className={`w-fit px-2 py-0.5 mt-3 text-xs rounded-full text-white
+    ${
+      roleTeam === "mafia"
+        ? "bg-red-600"
+        : roleTeam === "neutral"
+        ? "bg-blue-600"
+        : "bg-green-600"
+    }`}
+          >
+            {roleTeam}
+          </div>
         </div>
       )}
     </div>
