@@ -263,7 +263,8 @@ const Lobby = () => {
         <p className="text-sm mt-2 text-gray-300">
           Tap your emoji to change it to a random one!
         </p>
-        <p>FOR TESTING ONLY. REMOVE AFTER:</p>
+        {/* UNCOMMENT TO ADD TEST PLAYERS */}
+        {/* <p>FOR TESTING ONLY. REMOVE AFTER:</p>
         <Button
           onClick={() =>
             joinRoom(
@@ -273,7 +274,7 @@ const Lobby = () => {
           }
         >
           GENERATE RANDOM PLAYER
-        </Button>
+        </Button> */}
         <div className="mt-3 border-t border-gray-600 pt-4">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-xl font-bold text-gray-100">

@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
+import Confetti from "react-confetti";
 
 import { db } from "../firebase/firebase";
 import { getPlayerRole } from "../firebase/firestore/rooms";
@@ -176,18 +177,34 @@ const RoleReveal = () => {
       </div>
 
       {!playerAlive && (
-        <div className="mt-6 p-4 bg-red-900 rounded text-white">
-          You are dead.
-          {/* TODO: FIGURE OUT IF I SHOULD DISPLAY THE DEAD PLAYERS AND THEIR ROLES. ALSO, THIS UI SUCKS LOL. FUNCTIONAL FOR NOW */}
+        <div className="mt-8 p-6 bg-red-800 text-white rounded-xl shadow-lg text-center max-w-md w-full">
+          <h2 className="text-2xl font-bold mb-2">💀 You have died</h2>
+          <p className="text-sm text-gray-200">
+            You can no longer participate in the game. Sit back and watch the
+            rest unfold.
+          </p>
         </div>
       )}
       {isWinner !== null && (
-        <div
-          className={`mt-6 p-4 rounded text-white ${
-            isWinner ? "bg-green-700" : "bg-red-800"
-          }`}
-        >
-          {isWinner ? "🎉 You won!" : "😢 You lost!"}
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black text-white text-center fade-in-soft">
+          {isWinner && (
+            <>
+              <h1 className="text-4xl font-bold mb-2">🎉 Victory</h1>
+              <p className="text-gray-300 mb-6">Your team has won the game.</p>
+              <Confetti numberOfPieces={100} recycle={true} />
+            </>
+          )}
+          {!isWinner && (
+            <>
+              <h1 className="text-4xl font-bold mb-2">Defeat</h1>
+              <p className="text-gray-400 mb-6">
+                You lost. Better luck next time.
+              </p>
+            </>
+          )}
+          <p className="mt-6 text-sm text-gray-500">
+            Waiting for the narrator to start a new game...
+          </p>
         </div>
       )}
       <div className="mt-8 text-center w-full max-w-md">

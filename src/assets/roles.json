@@ -106,7 +106,7 @@
     },
     {
       "name": "Framer",
-      "description": "Frames a player each night to appear guilty to Cops. Wins with the mafias",
+      "description": "Frames a player each night to appear guilty to Detectives. Wins with the mafias",
       "team": "mafia",
       "killer": false
     }
