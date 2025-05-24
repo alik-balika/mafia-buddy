@@ -18,6 +18,8 @@ const RoleReveal = () => {
   const [alivePlayers, setAlivePlayers] = useState([]);
   const [playerAlive, setPlayerAlive] = useState(true);
   const [isWinner, setIsWinner] = useState(null);
+  const [flipped, setFlipped] = useState(false);
+  const roleEmoji = "🎭";
 
   useEffect(() => {
     const playerId = localStorage.getItem("playerId")?.trim();
@@ -61,7 +63,9 @@ const RoleReveal = () => {
           setRole(roleFromPool);
 
           if (roomData.winner === roleFromPool.team) {
-            setIsWinner(isWinner);
+            setIsWinner(true);
+          } else if (roomData.winner && roomData.winner !== roleFromPool.team) {
+            setIsWinner(false);
           }
         } catch (err) {
           toast.error(err.message);
@@ -141,12 +145,36 @@ const RoleReveal = () => {
   // ADD AN EXCEPTION FOR THE REVIVOR ROLE. IF THAT ROLE IS STILL ALIVE, DO NOT SHOW DEATH LIST
   // UNTIL THE REVIVOR IS DEAD
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+    <div className="flex flex-col items-center justify-center text-white">
       <h1 className="text-3xl font-bold mb-4">Your Role</h1>
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-80 text-center">
-        <p className="text-xl font-bold mb-2">{role.name}</p>
-        <p className="text-gray-300 text-sm">{role.description}</p>
+      <div
+        className="relative w-64 h-96 perspective"
+        onClick={() => setFlipped(!flipped)}
+      >
+        <div
+          className={`relative w-full h-full duration-700 transform-style preserve-3d transition-transform ${
+            flipped ? "rotate-y-180" : ""
+          }`}
+        >
+          {/* Front */}
+          <div className="absolute w-full h-full backface-hidden bg-gray-700 text-white rounded-xl shadow-lg flex items-center justify-center px-4">
+            <div className="text-center space-y-2">
+              <p className="text-4xl">{roleEmoji}</p>
+              <p className="text-base">Tap to reveal</p>
+            </div>
+          </div>
+
+          {/* Back */}
+          <div className="absolute w-full h-full backface-hidden bg-gray-700 text-white rounded-xl shadow-lg transform rotate-y-180 flex flex-col items-center justify-center px-4 py-6">
+            <p className="text-2xl font-bold">{role.name}</p>
+            <p className="text-sm text-center text-gray-300">
+              {role.description}
+            </p>
+            <p className="mt-4 text-xs text-gray-400">Tap to hide</p>
+          </div>
+        </div>
       </div>
+
       {!playerAlive && (
         <div className="mt-6 p-4 bg-red-900 rounded text-white">
           You are dead.
@@ -162,12 +190,20 @@ const RoleReveal = () => {
           {isWinner ? "🎉 You won!" : "😢 You lost!"}
         </div>
       )}
-      <div className="mt-8 text-center">
-        <h2 className="text-xl font-semibold mb-2">Players Still Alive:</h2>
-        <ul className="space-y-1 text-gray-300">
-          {alivePlayers.map((player) => (
-            <li key={player.id}>🟢 {player.name}</li>
-          ))}
+      <div className="mt-8 text-center w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-2">Players Still Alive</h2>
+        <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-sm mx-auto">
+          {alivePlayers
+            .filter((player) => !player.isNarrator)
+            .map((player) => (
+              <li
+                key={player.id}
+                className="bg-gray-700 p-2 rounded-lg flex flex-col items-center text-sm text-white"
+              >
+                <span className="text-xl">{player.emoji || "🧑"}</span>
+                <span>{player.name}</span>
+              </li>
+            ))}
         </ul>
       </div>
     </div>
