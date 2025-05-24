@@ -104,7 +104,7 @@ const PlayerCard = ({
               onClick={() => isNarrator && setIsEditing(true)}
               title={isNarrator ? "Click to edit name" : ""}
             >
-              <span>{name}</span>
+              <span className="mafia-text">{name}</span>
               {isNarrator && <Pencil size={16} className="text-gray-300" />}
               {isCurrentUser && (
                 <span className="ml-2 text-sm text-accent-gold-500 font-normal">

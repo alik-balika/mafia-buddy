@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Special+Elite&display=swap");
 
 @theme {
   /* Primary Colors */
@@ -44,4 +45,26 @@
   to {
     width: 1.25em;
   }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+.mafia-text {
+  font-family: "Special Elite", "Inter";
+}
+
+/* Body text */
+body,
+p,
+li,
+span,
+a,
+input,
+textarea {
+  font-family: "Inter", "Roboto", "Open Sans", sans-serif;
 }
