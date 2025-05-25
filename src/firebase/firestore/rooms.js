@@ -24,6 +24,7 @@ export const createRoom = async (roomId, rolePool, narratorName) => {
     gameStarted: false,
     gameHistory: [],
     winner: null,
+    currentNight: 1,
     createdAt: serverTimestamp(),
   };
 
