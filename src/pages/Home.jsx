@@ -15,6 +15,7 @@ const Home = () => {
       <Button onClick={() => navigate("/create-room")}>Create a room</Button>
       <Button onClick={() => navigate("/join-room")}>Join a room</Button>
 
+      {/* TODO: REMOVE THESE COMMENTS. DONT THINK I NEED THEM ANYMORE */}
       {/* Ugh. For some reason, I need to actively display these for the buttons to work. I suspect it's because I'm
       dynamically assigning background colors to the buttons and so they are not cached and it doesn't work. Keeping this here
       for easy uncommenting to make the colors work */}

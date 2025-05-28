@@ -103,25 +103,49 @@ const GameRoom = () => {
       // TODO: FIGURE OUT THESE WIN CONDITIONS. BECAUSE IF AN ARSONIST IS STILL ALIVE FOR EXAMPLE,
       // THE GAME SHOULD KEEP ON GOING. BUT, ON THE OTHER HAND, IF A ROLE LIKE JESTER IS STILL ALIVE,
       // THE GAME SHOULD END
+      let winner = null;
+
+      // const executioners = updatedPlayers.filter(
+      //   (p) => p.role?.toLowerCase() === "executioner"
+      // );
+
+      // executioners win if the players vote out their target
+      // TODO: CURRENTLY DOES NOT WORK AS THERE IS NO KILLEDBY LOGIC. RN IT'S EITHER DEAD OR ALIVE.
+      // IF EXECUTIONER MANAGES TO VOTE SOMEONE. Narrator will have to manually kill everyone
+      // for (const exe of executioners) {
+      //   const target = updatedPlayers.find((p) => p.name === exe.target);
+      //   if (target && !target.alive && target.killedBy === "vote") {
+      //     toast.success(`🎯 ${exe.name} (Executioner) wins!`);
+      //     winner = exe.name;
+      //     updateDoc(doc(db, "rooms", roomId), { winner });
+      //     setWinner(winner);
+      //     return;
+      //   }
+      // }
+
+      // Town win: Mafia dead and town alive
       if (aliveByTeam.mafia.length === 0 && aliveByTeam.town.length > 0) {
         toast.success("🎉 Town wins!");
-        setWinner("town");
-        updateDoc(doc(db, "rooms", roomId), { winner: "town" });
-      } else if (
-        aliveByTeam.town.length === 0 &&
-        aliveByTeam.mafia.length > 0
-      ) {
+        winner = "town";
+      }
+      // Mafia win: Town dead and mafia alive
+      else if (aliveByTeam.town.length === 0 && aliveByTeam.mafia.length > 0) {
         toast.success("🕵️ Mafia wins!");
-        setWinner("mafia");
-        updateDoc(doc(db, "rooms", roomId), { winner: "mafia" });
-      } else if (
+        winner = "mafia";
+      }
+      // Neutral win: only neutrals left alive
+      else if (
         aliveByTeam.mafia.length === 0 &&
         aliveByTeam.town.length === 0 &&
         aliveByTeam.neutral.length > 0
       ) {
         toast.success("🎭 A neutral role wins!");
-        setWinner("neutral");
-        updateDoc(doc(db, "rooms", roomId), { winner: "neutral" });
+        winner = "neutral";
+      }
+
+      if (winner) {
+        updateDoc(doc(db, "rooms", roomId), { winner });
+        setWinner(winner);
       }
     });
 

@@ -4,18 +4,17 @@ import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import Confetti from "react-confetti";
 
 import { db } from "../firebase/firebase";
-import { getPlayerRole } from "../firebase/firestore/rooms";
+import { getPlayer } from "../firebase/firestore/rooms";
 import { toast } from "react-toastify";
 
 // TODO: ALSO, ON DEATH SHOULD BE ABLE TO SEE WHAT EVERYONE ELSE IS (Hmmm... Should I do this? Idk if I want to reveal TOO much info)
 const RoleReveal = () => {
   const navigate = useNavigate();
   const { roomId } = useParams();
-  const [role, setRole] = useState(null);
+  const [player, setPlayer] = useState(null);
   const [room, setRoom] = useState(null);
   const [loading, setLoading] = useState(true);
   const [alivePlayers, setAlivePlayers] = useState([]);
-  const [playerAlive, setPlayerAlive] = useState(true);
   const [isWinner, setIsWinner] = useState(null);
   const [flipped, setFlipped] = useState(false);
   const roleEmoji = "🎭";
@@ -52,14 +51,15 @@ const RoleReveal = () => {
         }
 
         try {
-          const assignedRole = await getPlayerRole(roomId, playerId);
+          const playerData = await getPlayer(roomId, playerId);
+          setRoom(roomData);
 
           const roleFromPool = roomData.rolePool.find(
-            (r) => r.name === assignedRole
+            (r) => r.name === playerData.role
           );
 
-          setRoom(roomData);
-          setRole(roleFromPool);
+          playerData.role = roleFromPool;
+          setPlayer(playerData);
 
           if (roomData.winner === roleFromPool.team) {
             setIsWinner(true);
@@ -93,23 +93,7 @@ const RoleReveal = () => {
       unsubscribeRoom();
       unsubscribeAlivePlayers();
     };
-  }, [roomId, navigate, isWinner]);
-
-  useEffect(() => {
-    const playerId = localStorage.getItem("playerId")?.trim();
-    if (!playerId) return;
-
-    const playerDocRef = doc(db, "rooms", roomId, "players", playerId);
-
-    const unsubscribePlayer = onSnapshot(playerDocRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const playerData = docSnap.data();
-        setPlayerAlive(playerData.alive);
-      }
-    });
-
-    return () => unsubscribePlayer();
-  }, [roomId]);
+  }, [roomId, navigate]);
 
   if (loading) {
     return (
@@ -127,7 +111,7 @@ const RoleReveal = () => {
     return null;
   }
 
-  if (!role) {
+  if (!player.role) {
     return (
       <div className="flex items-center justify-center h-screen text-white text-center">
         <p>
@@ -164,16 +148,28 @@ const RoleReveal = () => {
 
           {/* Back */}
           <div className="absolute w-full h-full backface-hidden bg-gray-700 text-white rounded-xl shadow-lg transform rotate-y-180 flex flex-col items-center justify-center px-4 py-6">
-            <p className="text-2xl font-bold">{role.name}</p>
+            <p className="text-2xl font-bold">{player.role.name}</p>
             <p className="text-sm text-center text-gray-300">
-              {role.description}
+              {player.role.description}
             </p>
+            {player.role.name === "Executioner" && player.target && (
+              <div className="mt-4 p-3 bg-zinc-800 rounded-lg border border-accent-gold-500 text-accent-gold-300 text-sm text-center">
+                🎯 Your target is <strong>{player.target}</strong>.<br />
+                You win if they are voted out.
+                <p className="mt-4">
+                  <small>
+                    Note, you do not win if they die at night. They must be
+                    voted out.
+                  </small>
+                </p>
+              </div>
+            )}
             <p className="mt-4 text-xs text-gray-400">Tap to hide</p>
           </div>
         </div>
       </div>
 
-      {!playerAlive && (
+      {!player.alive && (
         <div className="mt-8 p-6 bg-red-800 text-white rounded-xl shadow-lg text-center max-w-md w-full">
           <h2 className="text-2xl font-bold mb-2">💀 You have died</h2>
           <p className="text-sm text-gray-200">

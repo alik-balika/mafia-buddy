@@ -105,7 +105,7 @@ export const removePlayerFromRoom = async (roomId, playerId) => {
   await deleteDoc(playerRef);
 };
 
-export const getPlayerRole = async (roomId, playerId) => {
+export const getPlayer = async (roomId, playerId) => {
   if (!playerId) {
     throw new Error("Player ID not found.");
   }
@@ -114,9 +114,9 @@ export const getPlayerRole = async (roomId, playerId) => {
   const roleSnapshot = await getDoc(roleRef);
 
   if (roleSnapshot.exists()) {
-    return roleSnapshot.data().role;
+    return roleSnapshot.data();
   } else {
-    throw new Error("Role not found for this player.");
+    throw new Error("Player not found.");
   }
 };
 
@@ -187,9 +187,23 @@ export const startGame = async (roomId) => {
   const batch = writeBatch(db);
   activePlayers.forEach((docSnap, index) => {
     const playerRef = doc(db, "rooms", roomId, "players", docSnap.id);
-    batch.update(playerRef, {
-      role: allRoles[index],
-    });
+    const assignedRole = allRoles[index];
+    const updateData = { role: assignedRole };
+
+    if (assignedRole === "Executioner") {
+      const possibleTargets = activePlayers.filter(
+        (p) => p.id !== docSnap.id && !p.isNarrator
+      );
+
+      if (possibleTargets.length > 0) {
+        const target =
+          possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
+        const targetData = target.data();
+        updateData.target = targetData.name;
+      }
+    }
+
+    batch.update(playerRef, updateData);
   });
 
   batch.update(roomRef, {
