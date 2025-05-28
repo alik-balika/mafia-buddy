@@ -7,9 +7,7 @@ import { db } from "../firebase/firebase";
 import { getPlayerRole } from "../firebase/firestore/rooms";
 import { toast } from "react-toastify";
 
-// TODO MAKE THIS MORE OF AN ACTUAL LOOKING CARD THAT WHEN TAPPED CAN BE FLIPPED TO HIDE/REVEAL
-// ALSO, ON DEATH SHOULD BE ABLE TO SEE WHAT EVERYONE ELSE IS (Hmmm... Should I do this? Idk if I want to reveal TOO much info)
-// TODO: AUTO NAVIGATE TO LOBBY WHEN NARRATOR STARTS A NEW GAME
+// TODO: ALSO, ON DEATH SHOULD BE ABLE TO SEE WHAT EVERYONE ELSE IS (Hmmm... Should I do this? Idk if I want to reveal TOO much info)
 const RoleReveal = () => {
   const navigate = useNavigate();
   const { roomId } = useParams();
@@ -113,7 +111,6 @@ const RoleReveal = () => {
     return () => unsubscribePlayer();
   }, [roomId]);
 
-  // TODO: MAKE THIS PAGE MORE SEXY
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">

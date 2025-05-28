@@ -3,7 +3,6 @@ import React from "react";
 import Button from "../components/Button";
 import { useNavigate } from "react-router";
 
-// TODO: CHANGE UP FONT AND VISUALS AND USE ANIMATIONS TO MAKE IT MORE FUN AND VISUALLY PLEASING
 const Home = () => {
   const navigate = useNavigate();
 

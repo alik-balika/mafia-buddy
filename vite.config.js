@@ -11,11 +11,11 @@ export default defineConfig({
     strictPort: true,
     // hmr: true,
     allowedHosts: [
-      "ac5c-2600-100f-a020-b271-d52a-2413-8608-89f3.ngrok-free.app",
+      "5ec3-2600-100f-a020-b271-5873-c2aa-ef4-ad2c.ngrok-free.app",
     ], // change link as ngrok host changes
     hmr: {
       protocol: "wss",
-      host: "ac5c-2600-100f-a020-b271-d52a-2413-8608-89f3.ngrok-free.app",
+      host: "5ec3-2600-100f-a020-b271-5873-c2aa-ef4-ad2c.ngrok-free.app",
     },
   },
 });
