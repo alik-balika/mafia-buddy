@@ -18,6 +18,7 @@ const PlayerCard = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(name);
+  const [showDeathModal, setShowDeathModal] = useState(false);
 
   const handleNameSubmit = (e) => {
     e.preventDefault();
@@ -122,7 +123,13 @@ const PlayerCard = ({
           <Button
             bgColor={alive ? "primary" : "gray"}
             className="ml-4 flex items-center gap-1 text-sm whitespace-nowrap"
-            onClick={toggleAlive}
+            onClick={() => {
+              if (alive) {
+                setShowDeathModal(true);
+              } else {
+                toggleAlive();
+              }
+            }}
           >
             {alive ? <Skull size={16} /> : <Heart size={16} />}
             {alive ? "Kill" : "Revive"}
@@ -137,15 +144,49 @@ const PlayerCard = ({
           )}
           <div
             className={`w-fit px-2 py-0.5 mt-3 text-xs rounded-full text-white
-    ${
-      roleTeam === "mafia"
-        ? "bg-red-600"
-        : roleTeam === "neutral"
-        ? "bg-blue-600"
-        : "bg-green-600"
-    }`}
+            ${
+              roleTeam === "mafia"
+                ? "bg-red-600"
+                : roleTeam === "neutral"
+                ? "bg-blue-600"
+                : "bg-green-600"
+            }`}
           >
             {roleTeam}
+          </div>
+        </div>
+      )}
+      {showDeathModal && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setShowDeathModal(false)}
+        >
+          <div
+            className="bg-gray-800 p-6 rounded-lg w-full max-w-xs"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-white text-lg mb-4">How did {name} die?</h2>
+            {[
+              ["Voted Out", "vote"],
+              ["Killed by Mafia", "mafia"],
+            ].map(([label, value]) => (
+              <button
+                key={value}
+                onClick={() => {
+                  setShowDeathModal(false);
+                  toggleAlive(value);
+                }}
+                className="w-full mb-2 p-2 bg-gray-700 text-white rounded hover:bg-gray-600 cursor-pointer"
+              >
+                {label}
+              </button>
+            ))}
+            <Button
+              className="mt-2 text-sm w-full"
+              onClick={() => setShowDeathModal(false)}
+            >
+              Cancel
+            </Button>
           </div>
         </div>
       )}

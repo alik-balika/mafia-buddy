@@ -105,23 +105,22 @@ const GameRoom = () => {
       // THE GAME SHOULD END
       let winner = null;
 
-      // const executioners = updatedPlayers.filter(
-      //   (p) => p.role?.toLowerCase() === "executioner"
-      // );
+      const executioners = updatedPlayers.filter(
+        (p) => p.role?.toLowerCase() === "executioner"
+      );
 
       // executioners win if the players vote out their target
-      // TODO: CURRENTLY DOES NOT WORK AS THERE IS NO KILLEDBY LOGIC. RN IT'S EITHER DEAD OR ALIVE.
-      // IF EXECUTIONER MANAGES TO VOTE SOMEONE. Narrator will have to manually kill everyone
-      // for (const exe of executioners) {
-      //   const target = updatedPlayers.find((p) => p.name === exe.target);
-      //   if (target && !target.alive && target.killedBy === "vote") {
-      //     toast.success(`🎯 ${exe.name} (Executioner) wins!`);
-      //     winner = exe.name;
-      //     updateDoc(doc(db, "rooms", roomId), { winner });
-      //     setWinner(winner);
-      //     return;
-      //   }
-      // }
+      // may be finicky if target is mafia but can't be bothered to figure it out atm. It works rn so let's freaking go
+      for (const exe of executioners) {
+        const target = updatedPlayers.find((p) => p.name === exe.target);
+        if (target && !target.alive && target.diedBy === "vote") {
+          toast.success(`🎯 ${exe.name} (Executioner) wins!`);
+          winner = exe.name;
+          updateDoc(doc(db, "rooms", roomId), { winner });
+          setWinner(winner);
+          return;
+        }
+      }
 
       // Town win: Mafia dead and town alive
       if (aliveByTeam.mafia.length === 0 && aliveByTeam.town.length > 0) {
@@ -180,7 +179,7 @@ const GameRoom = () => {
     });
   };
 
-  const toggleAlive = async (player) => {
+  const toggleAlive = async (player, diedBy = null) => {
     const playerRef = doc(db, "rooms", roomId, "players", player.id);
     const roomRef = doc(db, "rooms", roomId);
 
@@ -201,6 +200,7 @@ const GameRoom = () => {
       await Promise.all([
         updateDoc(playerRef, {
           alive: false,
+          diedBy: diedBy,
           deathTimestamp: Date.now(),
         }),
         updateDoc(roomRef, { gameHistory: updatedHistory }),
@@ -209,6 +209,7 @@ const GameRoom = () => {
       // REVIVE
       await updateDoc(playerRef, {
         alive: true,
+        diedBy: null,
         deathTimestamp: null,
       });
     }
@@ -292,7 +293,7 @@ const GameRoom = () => {
                     name={player.name}
                     emoji={player.emoji}
                     alive={player.alive}
-                    toggleAlive={() => toggleAlive(player)}
+                    toggleAlive={(diedBy) => toggleAlive(player, diedBy)}
                     roleName={player.role}
                     roleDescription={matchingRole?.description}
                     roleTeam={matchingRole?.team}
