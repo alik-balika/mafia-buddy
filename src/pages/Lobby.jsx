@@ -301,7 +301,7 @@ const Lobby = () => {
           )}
         </div>
       </div>
-      {showCountdown && (
+      {showCountdown && !currentPlayer?.isNarrator && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
           <div className="text-center text-white">
             <p className="text-2xl mb-4">Game is starting in...</p>

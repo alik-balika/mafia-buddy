@@ -37,17 +37,6 @@ const PlayerCard = ({
         ? "bg-accent-gold-900 border-2 border-accent-gold-500"
         : "bg-gray-600"
     }
-    ${
-      roleName
-        ? `border-2 ${
-            roleTeam === "mafia"
-              ? "border-red-500"
-              : roleTeam === "neutral"
-              ? "border-blue-500"
-              : "border-green-500"
-          }`
-        : ""
-    }
   `}
     >
       <div
@@ -98,19 +87,24 @@ const PlayerCard = ({
           </form>
         ) : (
           <div className="flex items-center justify-between flex-1">
-            <div
-              className={`flex items-center gap-2 text-lg font-semibold text-white wrap-anywhere ${
-                isNarrator ? "cursor-pointer hover:text-accent-gold-300" : ""
-              }`}
-              onClick={() => isNarrator && setIsEditing(true)}
-              title={isNarrator ? "Click to edit name" : ""}
-            >
-              <span className="mafia-text">{name}</span>
-              {isNarrator && <Pencil size={16} className="text-gray-300" />}
-              {isCurrentUser && (
-                <span className="ml-2 text-sm text-accent-gold-500 font-normal">
-                  (You)
-                </span>
+            <div>
+              <div
+                className={`flex items-center gap-2 text-lg font-semibold text-white wrap-anywhere ${
+                  isNarrator ? "cursor-pointer hover:text-accent-gold-300" : ""
+                }`}
+                onClick={() => isNarrator && setIsEditing(true)}
+                title={isNarrator ? "Click to edit name" : ""}
+              >
+                <span className="mafia-text">{name}</span>
+                {isNarrator && <Pencil size={16} className="text-gray-300" />}
+                {isCurrentUser && (
+                  <span className="ml-2 text-sm text-accent-gold-500 font-normal">
+                    (You)
+                  </span>
+                )}
+              </div>
+              {roleName && (
+                <p className="text-gray-300 text-sm font-bold">{roleName}</p>
               )}
             </div>
             {isNarrator && !isCurrentUser && (
@@ -136,9 +130,8 @@ const PlayerCard = ({
         )}
       </div>
 
-      {(roleName || roleDescription) && (
-        <div className="mt-2 p-2 rounded bg-gray-700 text-white text-sm shadow-inner">
-          <div className="font-bold">{roleName}</div>
+      {roleDescription && (
+        <div className="text-white text-sm">
           {roleDescription && (
             <div className="text-gray-300 text-xs mt-1">{roleDescription}</div>
           )}

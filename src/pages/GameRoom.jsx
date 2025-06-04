@@ -256,16 +256,17 @@ const GameRoom = () => {
   return (
     <div>
       <h1 className="text-3xl font-bold text-center mb-4">{roomId}</h1>
-      <div className="flex justify-center mb-4">
-        <Button className="flex items-center gap-2" onClick={nextNight}>
+      <div className="flex justify-center mb-4 flex-col w-full md:flex-row gap-2">
+        <Button
+          className="flex items-center gap-2 justify-center"
+          onClick={nextNight}
+          variant="outline"
+          bgColor="accent-gold"
+        >
           <SunMoon size={18} /> Next Night
         </Button>
         {winner && (
-          <Button
-            className="ml-2"
-            onClick={handleStartNewGame}
-            variant="secondary"
-          >
+          <Button onClick={handleStartNewGame} variant="secondary">
             🔁 Start a New Game
           </Button>
         )}
