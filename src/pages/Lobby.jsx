@@ -44,7 +44,6 @@ const Lobby = () => {
       });
   };
 
-  // TODO: ADD SUPER SECRET QUERY PARAM THAT WILL ALLOW ME PERSONALLY TO ACT AS NARRATOR IN ALL LOBBIES
   // TODO: ALLOW NARRATOR TO PRE-ASSIGN ROLES IN LOBBY AND RANDOMIZE THE REST
   useEffect(() => {
     const roomRef = doc(db, "rooms", roomId);

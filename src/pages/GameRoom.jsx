@@ -9,6 +9,7 @@ import {
   updateDoc,
   getDocs,
   writeBatch,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { toast } from "react-toastify";
@@ -231,11 +232,19 @@ const GameRoom = () => {
       });
     });
 
+    const roomSnap = await getDoc(roomRef);
+    const roomData = roomSnap.data();
+
+    const filteredRolePool = (roomData?.rolePool || []).filter(
+      (role) => role.name !== "Villager"
+    );
+
     batch.update(roomRef, {
       currentNight: 1,
       gameStarted: false,
       gameHistory: [],
       winner: null,
+      rolePool: filteredRolePool,
     });
 
     await batch.commit();
