@@ -210,10 +210,10 @@ const Lobby = () => {
   return (
     <div>
       <h1 className="text-3xl font-bold text-center mb-2">{roomId}</h1>
-      <div className="flex justify-center gap-4">
+      <div className="flex flex-col md:flex-row md:justify-between justify-center gap-4">
         <Button
           bgColor="accent-gold"
-          className="text-accent-gold-500 font-semibold flex gap-2"
+          className="text-accent-gold-500 font-semibold flex gap-2 justify-center"
           variant="outline"
           onClick={copyLinkNotification}
         >
@@ -280,16 +280,6 @@ const Lobby = () => {
             <h2 className="text-xl font-bold text-gray-100">
               Roles in this Game:
             </h2>
-            {currentPlayer?.isNarrator && (
-              <Button
-                size="sm"
-                variant="secondary"
-                className="text-sm flex items-center gap-2"
-                onClick={() => navigate(`/edit-room/${roomId}`)}
-              >
-                <Pencil size={16} /> Edit Roles
-              </Button>
-            )}
           </div>
           <ul className="space-y-1">
             {roomData?.rolePool.map((role, idx) => (
@@ -299,6 +289,16 @@ const Lobby = () => {
               </li>
             ))}
           </ul>
+          {currentPlayer?.isNarrator && (
+            <Button
+              bgColor="accent-gold"
+              variant="outline"
+              className="text-sm flex items-center gap-2 mt-2 w-full justify-center md:max-w-52"
+              onClick={() => navigate(`/edit-room/${roomId}`)}
+            >
+              <Pencil size={16} /> Edit Roles
+            </Button>
+          )}
         </div>
       </div>
       {showCountdown && (

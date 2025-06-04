@@ -66,10 +66,7 @@ const PlayerCard = ({
         </div>
 
         {isNarrator && isEditing ? (
-          <form
-            className="flex gap-3 items-center w-full"
-            onSubmit={handleNameSubmit}
-          >
+          <form className="items-center w-full" onSubmit={handleNameSubmit}>
             <input
               value={tempName}
               className="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white"
@@ -82,18 +79,22 @@ const PlayerCard = ({
                 }
               }}
             />
-            <Button type="submit">Save</Button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsEditing(false);
-                setTempName(name);
-              }}
-              className="p-1"
-              title="Cancel"
-            >
-              <X size={24} className="text-gray-400 hover:text-red-400" />
-            </button>
+            <div className="flex items-center mt-1">
+              <Button type="submit" className="w-full">
+                Save
+              </Button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditing(false);
+                  setTempName(name);
+                }}
+                className="p-1"
+                title="Cancel"
+              >
+                <X size={24} className="text-gray-400 hover:text-red-400" />
+              </button>
+            </div>
           </form>
         ) : (
           <div className="flex items-center justify-between flex-1">
