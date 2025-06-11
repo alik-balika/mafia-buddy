@@ -154,6 +154,11 @@ export const startGame = async (roomId) => {
   const players = playerSnap.docs;
 
   const activePlayers = players.filter((doc) => !doc.data().isNarrator);
+
+  const preAssignedRoles = activePlayers
+    .map((p) => p.data().role)
+    .filter((r) => r);
+
   const assignedCount = roomData.rolePool.reduce(
     (sum, role) => sum + role.count,
     0
@@ -178,6 +183,17 @@ export const startGame = async (roomId) => {
     Array(role.count).fill(role.name)
   );
 
+  for (const role of preAssignedRoles) {
+    const idx = allRoles.indexOf(role);
+    if (idx !== -1) {
+      allRoles.splice(idx, 1);
+    } else {
+      console.warn(
+        `Warning: Pre-assigned role "${role}" not found in role pool`
+      );
+    }
+  }
+
   // shuffle the roles
   for (let i = allRoles.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -185,9 +201,13 @@ export const startGame = async (roomId) => {
   }
 
   const batch = writeBatch(db);
-  activePlayers.forEach((docSnap, index) => {
+  activePlayers.forEach((docSnap) => {
+    const playerData = docSnap.data();
+
+    if (playerData.role) return;
+
     const playerRef = doc(db, "rooms", roomId, "players", docSnap.id);
-    const assignedRole = allRoles[index];
+    const assignedRole = allRoles.pop();
     const updateData = { role: assignedRole };
 
     if (assignedRole === "Executioner") {

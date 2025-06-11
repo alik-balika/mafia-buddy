@@ -8,6 +8,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  writeBatch,
 } from "firebase/firestore";
 
 import Button from "../components/Button";
@@ -30,6 +31,8 @@ const Lobby = () => {
   const [currentPlayer, setCurrentPlayer] = useState(null);
   const [showCountdown, setShowCountdown] = useState(false);
   const [countdownValue, setCountdownValue] = useState(3);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [roleAssignments, setRoleAssignments] = useState({});
 
   const copyLinkNotification = () => {
     const inviteLink = `${window.location.origin}/join-room?roomId=${roomId}`;
@@ -44,7 +47,6 @@ const Lobby = () => {
       });
   };
 
-  // TODO: ALLOW NARRATOR TO PRE-ASSIGN ROLES IN LOBBY AND RANDOMIZE THE REST
   useEffect(() => {
     const roomRef = doc(db, "rooms", roomId);
 
@@ -206,6 +208,14 @@ const Lobby = () => {
     );
   }
 
+  const getAssignedCounts = () => {
+    const counts = {};
+    for (const role of Object.values(roleAssignments)) {
+      if (role) counts[role] = (counts[role] || 0) + 1;
+    }
+    return counts;
+  };
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-center mb-2">{roomId}</h1>
@@ -256,6 +266,7 @@ const Lobby = () => {
               isNarrator={currentPlayer?.isNarrator}
               onNameChange={(newName) => onNameChange(player.id, newName)}
               onKick={() => kickPlayer(player.id)}
+              preAssignedRole={player.role}
             />
           ))}
         </div>
@@ -298,6 +309,19 @@ const Lobby = () => {
               <Pencil size={16} /> Edit Roles
             </Button>
           )}
+          {currentPlayer?.isNarrator && (
+            <Button
+              bgColor="gray"
+              variant="outline"
+              className="text-sm flex items-center mt-2 w-full justify-center md:max-w-52"
+              onClick={() => {
+                setShowAssignModal(true);
+                setRoleAssignments([]);
+              }}
+            >
+              Pre-Assign Roles
+            </Button>
+          )}
         </div>
       </div>
       {showCountdown && !currentPlayer?.isNarrator && (
@@ -306,6 +330,97 @@ const Lobby = () => {
             <p className="text-2xl mb-4">Game is starting in...</p>
             <div className="text-6xl font-bold animate-pulse">
               {countdownValue}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Nearly done. Mostly vibe coded... But, I'm too tired to think rn. The functionality to show the current role name on the
+      dropdown is not working atm */}
+      {showAssignModal && (
+        <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
+          <div
+            className="bg-gray-900 p-6 rounded-lg w-full max-w-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-white text-lg mb-4">Assign Roles</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+              {players
+                .filter((player) => !player.isNarrator)
+                .map((player) => (
+                  <div key={player.id}>
+                    <div className="flex justify-between">
+                      <p className="text-white mb-1">{player.name}</p>
+                      <p>{player.role ?? "No Role"}</p>
+                    </div>
+                    <select
+                      className="w-full p-2 bg-gray-800 text-white rounded"
+                      value={roleAssignments[player.id] || ""}
+                      onChange={(e) =>
+                        setRoleAssignments((prev) => ({
+                          ...prev,
+                          [player.id]: e.target.value,
+                        }))
+                      }
+                    >
+                      <option value="">-- No Role --</option>
+                      {roomData.rolePool.map((role) => {
+                        const assignedCounts = getAssignedCounts();
+                        const currentValue = roleAssignments[player.id];
+                        const countUsed = assignedCounts[role.name] || 0;
+
+                        const alreadyUsed =
+                          currentValue === role.name
+                            ? countUsed - 1
+                            : countUsed;
+                        const isAvailable = alreadyUsed < role.count;
+
+                        return isAvailable || currentValue === role.name ? (
+                          <option
+                            key={role.name}
+                            value={role.name}
+                            selected={player.role === role.name}
+                          >
+                            {role.name}
+                            {role.count > 1
+                              ? ` (${role.count - alreadyUsed} left)`
+                              : ""}
+                          </option>
+                        ) : null;
+                      })}
+                    </select>
+                  </div>
+                ))}
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button
+                onClick={() => setShowAssignModal(false)}
+                className="bg-gray-700 hover:bg-gray-600"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  const batch = writeBatch(db);
+                  for (const [playerId, roleName] of Object.entries(
+                    roleAssignments
+                  )) {
+                    const playerRef = doc(
+                      db,
+                      "rooms",
+                      roomId,
+                      "players",
+                      playerId
+                    );
+                    batch.update(playerRef, { role: roleName });
+                  }
+                  await batch.commit();
+                  toast.success("Roles assigned!");
+                  setShowAssignModal(false);
+                }}
+              >
+                Save Assignments
+              </Button>
             </div>
           </div>
         </div>

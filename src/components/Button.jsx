@@ -15,10 +15,10 @@ const Button = ({
 
   const outlineMap = {
     primary:
-      "border border-primary-500 hover:border-primary-600 text-primary-400",
+      "border border-primary-500 hover:border-primary-600 text-primary-400 bg-transparent",
     "accent-gold":
-      "border border-accent-gold-500 hover:border-accent-gold-600 text-accent-gold-400",
-    gray: "border border-gray-500 hover:border-gray-600 text-gray-400",
+      "border border-accent-gold-500 hover:border-accent-gold-600 text-accent-gold-400 bg-transparent",
+    gray: "border border-gray-500 hover:border-gray-600 text-gray-400 bg-transparent",
   };
 
   const backgroundStyle =

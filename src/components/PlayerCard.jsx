@@ -15,6 +15,7 @@ const PlayerCard = ({
   roleName,
   roleDescription,
   roleTeam,
+  preAssignedRole,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(name);
@@ -106,6 +107,11 @@ const PlayerCard = ({
               </div>
               {roleName && (
                 <p className="text-gray-300 text-sm font-bold">{roleName}</p>
+              )}
+              {preAssignedRole && isNarrator && (
+                <p className="text-gray-300 text-sm font-bold">
+                  {preAssignedRole}
+                </p>
               )}
             </div>
             {isNarrator && !isCurrentUser && (
