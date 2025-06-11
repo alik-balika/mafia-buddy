@@ -45,7 +45,6 @@ const RoleReveal = () => {
         const roomData = docSnap.data();
 
         if (!roomData.gameStarted) {
-          toast.info("The game has not started yet.");
           setLoading(false);
           return navigate(`/lobby/${roomId}`);
         }

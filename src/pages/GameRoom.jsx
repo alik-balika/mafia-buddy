@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
   collection,
@@ -25,6 +25,8 @@ const GameRoom = () => {
   const [room, setRoom] = useState(null);
   const [players, setPlayers] = useState([]);
   const [winner, setWinner] = useState(null);
+  // this is so scuffed lol. This whole project is... Meant to code it myself and then I just got lost in the AI sauce
+  const toastShownRef = useRef(false);
 
   useEffect(() => {
     const roomRef = doc(db, "rooms", roomId);
@@ -34,7 +36,6 @@ const GameRoom = () => {
       (snapshot) => {
         const data = snapshot.data();
         if (!data?.gameStarted) {
-          toast.info("The game has not started yet.");
           return navigate(`/lobby/${roomId}`);
         }
 
@@ -123,29 +124,32 @@ const GameRoom = () => {
         }
       }
 
-      // Town win: Mafia dead and town alive
-      if (aliveByTeam.mafia.length === 0 && aliveByTeam.town.length > 0) {
-        toast.success("🎉 Town wins!");
-        winner = "town";
-      }
-      // Mafia win: Town dead and mafia alive
-      else if (aliveByTeam.town.length === 0 && aliveByTeam.mafia.length > 0) {
-        toast.success("🕵️ Mafia wins!");
-        winner = "mafia";
-      }
-      // Neutral win: only neutrals left alive
-      else if (
-        aliveByTeam.mafia.length === 0 &&
-        aliveByTeam.town.length === 0 &&
-        aliveByTeam.neutral.length > 0
-      ) {
-        toast.success("🎭 A neutral role wins!");
-        winner = "neutral";
-      }
+      if (!room.winner && !toastShownRef.current) {
+        if (aliveByTeam.mafia.length === 0 && aliveByTeam.town.length > 0) {
+          toast.success("🎉 Town wins!");
+          winner = "town";
+          toastShownRef.current = true;
+        } else if (
+          aliveByTeam.town.length === 0 &&
+          aliveByTeam.mafia.length > 0
+        ) {
+          toast.success("🕵️ Mafia wins!");
+          winner = "mafia";
+          toastShownRef.current = true;
+        } else if (
+          aliveByTeam.mafia.length === 0 &&
+          aliveByTeam.town.length === 0 &&
+          aliveByTeam.neutral.length > 0
+        ) {
+          toast.success("🎭 A neutral role wins!");
+          winner = "neutral";
+          toastShownRef.current = true;
+        }
 
-      if (winner) {
-        updateDoc(doc(db, "rooms", roomId), { winner });
-        setWinner(winner);
+        if (winner) {
+          updateDoc(doc(db, "rooms", roomId), { winner });
+          setWinner(winner);
+        }
       }
     });
 
