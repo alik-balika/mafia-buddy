@@ -72,7 +72,7 @@ const CreateRoom = ({ initialRoles = [], isEditing = false, roomId }) => {
       );
     }
 
-    if (!narratorName.trim()) {
+    if (!isEditing && !narratorName.trim()) {
       validationErrors.push("Please enter a narrator name.");
     }
 
